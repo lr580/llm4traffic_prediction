@@ -1,1 +1,3 @@
 deepseek_apikey.txt
+*.md  # deepseek 调试输出
+*.json # deepseek 调试输出
