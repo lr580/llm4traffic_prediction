@@ -10,7 +10,7 @@ for x in '3478':
     for r in range(5):
         for c in range(5):
             for k in range(sub.shape[2]):
-                print(f'{sub[r,c,k]:.2f}', end=' ')
+                print(f'{sub[r,c,k]:.4f}', end=' ')
             print(' ', end='')
         print()
     print()
