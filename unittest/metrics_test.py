@@ -24,3 +24,7 @@ mape = (torch.abs((y_true - y_pred) / y_true).mean()) * 100
 print("MAPE:", mape.item())  # ≈11.666%
 rmse = torch.sqrt(((y_pred - y_true) ** 2).mean())
 print("RMSE:", rmse.item())  # 1.0
+
+y_pred = torch.tensor([[[1.,2,3],[4,5,6],[7,8,9]],[[1.,2,3],[4,5,6],[7,8,9]]])
+y_true = torch.tensor([[[1.,2,3],[4,5,6],[7,8,9]],[[1.,2,3],[4,5,6],[7,8,9+18]]])
+print(masked_mae(y_pred, y_true))

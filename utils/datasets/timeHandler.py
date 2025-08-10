@@ -1,14 +1,18 @@
 import datetime
+from utils.common import date2str
 class TimeCalc():
-    def __init__(self, startTime, granularity):
+    def __init__(self, startTime:datetime.datetime, granularity:datetime.timedelta):
         self.startTime = startTime
         self.granularity = granularity
         
-    def getStartTime(self, i):
+    def getStartTime(self, i:int) -> datetime.datetime:
         '''i is 0-indexed'''
         return self.startTime + i * self.granularity
-    def getStartTimeStr(self, i):
-        return self.getStartTime(i).strftime("%Y-%m-%d %H:%M:%S")
+    def getStartTimeStr(self, i:int):
+        return date2str(self.getStartTime(i))
+    
+    def getWeek(self, i:int):
+        return self.getStartTime(i).strftime("%A") # e.g. Monday
         
 class PEMSTimeCalc(TimeCalc):
     def __init__(self, x):

@@ -9,16 +9,25 @@
   - `graphHandler.py` 图读取和基本操作
   - `timeHandler.py` 计算数据集的时间
   - `statHandler.py` 计算数据集统计量
+  - `dataset.py` 数据集读取和划分
+  - `handler.py` 上面内容的捆绑包
 
-- `metrics/` 评价指标参考 [BasicTS](https://github.com/GestaltCogTeam/BasicTS)
-- `unittest/` 单元测试、调试代码等
+- `metrics/` 评价指标实现参考 [BasicTS](https://github.com/GestaltCogTeam/BasicTS)
+  - `evaluation.py` 进行准确率评估
+
+- `common/` 基础通用代码
+  - `log.py` 输出和日志
+
 - `baselines/` 基准模型
-  - `HA.py`，历史平均值，不同节点、不同时间片、星期的三维度的平均值用作预测。
+  - `HA.py`，历史平均值，不同节点、不同时间片、星期的三维度的平均值用作预测
 
 
 提示词工程实验：`prompt/`
 
+- `query.py` 带缓存的封装 API 查询
+- `prompt.py` 不同的提示词方案
 
+单元测试、调试代码等：`unittest/` 
 
 ## 提示词工程
 

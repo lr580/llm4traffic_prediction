@@ -4,14 +4,19 @@ import json
 class CacheQuery():
     '''如果没有询问过，就调用API询问，如果询问过，返回询问结果。\n
     无上下文，不使用流。'''
-    def __init__(self, path):
+    def __init__(self, path=''):
         # self.client = OpenAI(api_key="key", base_url="https://api.xxx.com")
         self.client = None # 子类实现
         self.model = 'LLM' # 子类实现
         self.path = path
+        if self.path:
+            os.makedirs(self.path, exist_ok=True)
+            
+    def update_path(self, path):
+        self.path = path
         os.makedirs(self.path, exist_ok=True)
         
-    def query(self, queryID, userMessage='', message='',  systemMessage=''):
+    def query(self, queryID:str, userMessage='', message='',  systemMessage=''):
         filepath = os.path.join(self.path, f'{queryID}.json')
         if os.path.exists(filepath):
             content = self.readCache(filepath)
@@ -25,7 +30,7 @@ class CacheQuery():
         content = self.makeQuery(filepath, message)
         return content
                 
-    def makeQuery(self, filepath, message):
+    def makeQuery(self, filepath:str, message:dict)->str:
         response = self.client.chat.completions.create(
             model=self.model,
             messages=message,
@@ -36,7 +41,7 @@ class CacheQuery():
         content = response.choices[0].message.content
         return content
     
-    def readCache(self, filepath):
+    def readCache(self, filepath:str)->str:
         with open(filepath, encoding='utf-8') as f:
             data = json.load(f)
         content = data['choices'][0]['message']['content']
@@ -46,7 +51,7 @@ with open(r'prompt/deepseek_apikey.txt') as f:
     deepseek_apikey = f.read().strip()
     
 class DeepseekQuery(CacheQuery):
-    def __init__(self, path, apikey=''):
+    def __init__(self, path='', apikey=''):
         super().__init__(path)
         if not apikey:
             self.apikey = deepseek_apikey

@@ -1,13 +1,13 @@
 import pickle
 import numpy as np
 class Graph():
-    def load_graph(self, filepath):
+    def load_graph(self, filepath:str):
         with open(filepath, 'rb') as f:
-            self.g = pickle.load(f)
-    def __init__(self, filepath):
+            self.g:np.ndarray = pickle.load(f)
+    def __init__(self, filepath:str):
         self.load_graph(filepath)
         
-    def get_neighbors(self, node):
+    def get_neighbors(self, node:int):
         return np.nonzero(self.g[node])[0]
     
 class PEMSGraph(Graph):
