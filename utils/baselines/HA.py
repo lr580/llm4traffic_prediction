@@ -1,4 +1,5 @@
 # 使用历史平均值预测，检验结果是否与一般模型在同一个数量级，验证原始数据量纲
+'''更低耦合的实现： utils/unittest/HA_test.py'''
 import numpy as np
 import sys, os
 # import pickle

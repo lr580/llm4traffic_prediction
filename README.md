@@ -5,6 +5,11 @@
 
 数据处理等 `utils/`
 
+- `datasets/` 数据集操作
+  - `graphHandler.py` 图读取和基本操作
+  - `timeHandler.py` 计算数据集的时间
+  - `statHandler.py` 计算数据集统计量
+
 - `metrics/` 评价指标参考 [BasicTS](https://github.com/GestaltCogTeam/BasicTS)
 - `unittest/` 单元测试、调试代码等
 - `baselines/` 基准模型
