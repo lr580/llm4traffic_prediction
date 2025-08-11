@@ -12,7 +12,7 @@ def transfer_format(y_pred, y_true):
         y_true = torch.tensor(y_true).float()
     return y_pred, y_true
 
-def evaluate_average(y_pred, y_true, verbose=True):
+def evaluate_average(y_pred, y_true, verbose=False):
     y_pred, y_true = transfer_format(y_pred, y_true)
     mae = masked_mae(y_pred, y_true).item()
     mape = masked_mape(y_pred, y_true).item()

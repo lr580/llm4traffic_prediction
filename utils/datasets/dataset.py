@@ -6,8 +6,6 @@ from .data import SingleInput, SingleData, DataList
 class Dataset():
     def __init__(self, path:typing.Union[int, str]=''):
         self.data = self.load_data(path)
-        self.space = self.load_space()
-        self.name = self.load_name()
         self.train_ratio = 0.6
         self.val_ratio = 0.2
         self.test_ratio = 1 - self.train_ratio - self.val_ratio
@@ -20,12 +18,6 @@ class Dataset():
         
     def load_data(self, path:str): # to be implemented by subclass
         return np.zeros((1,1,3), dtype=np.float32)
-    
-    def load_space(self): # to be implemented by subclass
-        return 'undefined'
-    
-    def load_name(self): # to be implemented by subclass
-        return 'undefined'
         
     def get_train(self):
         return self.data[:self.train_end,:,:]
@@ -86,20 +78,6 @@ class PEMSDataset(Dataset):
         shape = desc['shape']
         filepath = f'data/processed/PEMS0{x}/data.dat'
         return np.memmap(filepath, dtype=np.float32, mode='r', shape=shape)
-    
-    def load_space(self):
-        # the information from https://www.sciencedirect.com/science/article/pii/S0957417422011654
-        if self.x == 3:
-            return '中北部区域(North Central Area)'
-        elif self.x == 4:
-            return '旧金山湾区(San Francisco Bay Area)'
-        elif self.x == 7:
-            return '洛杉矶区域(Los Angeles Area)'
-        elif self.x == 8:
-            return '圣贝纳迪诺区(San Bernardino Area)'
-        
-    def load_name(self):
-        return f'PEMS0{self.x}'
     
     def __init__(self, x):
         self.x = x

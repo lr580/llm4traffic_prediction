@@ -11,7 +11,8 @@
   - `statHandler.py` 计算数据集统计量
   - `dataset.py` 数据集读取和划分
   - `handler.py` 上面内容的捆绑包
-
+  - `data.py` 输入、输出、真实值、评估结果集成及其存取
+  
 - `metrics/` 评价指标实现参考 [BasicTS](https://github.com/GestaltCogTeam/BasicTS)
   - `evaluation.py` 进行准确率评估
 
