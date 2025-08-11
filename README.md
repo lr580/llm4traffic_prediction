@@ -26,6 +26,7 @@
 
 - `query.py` 带缓存的封装 API 查询
 - `prompt.py` 不同的提示词方案
+- `model.py` 主体类，执行实验
 
 单元测试、调试代码等：`unittest/` 
 

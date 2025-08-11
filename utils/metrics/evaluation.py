@@ -14,7 +14,7 @@ def transfer_format(y_pred, y_true):
 
 def evaluate_average(y_pred, y_true, verbose=True):
     y_pred, y_true = transfer_format(y_pred, y_true)
-    mae = masked_mae(y_pred, y_true)
-    mape = masked_mape(y_pred, y_true)
-    rmse = masked_rmse(y_pred, y_true)
+    mae = masked_mae(y_pred, y_true).item()
+    mape = masked_mape(y_pred, y_true).item()
+    rmse = masked_rmse(y_pred, y_true).item()
     return prints_and_returns(verbose, MAE=mae, MAPE=mape, RMSE=rmse)

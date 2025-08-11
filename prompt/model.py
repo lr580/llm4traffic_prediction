@@ -1,7 +1,7 @@
 from .query import *
 from .prompt import *
 from utils.datasets.handler import *
-from utils.common import randomStr
+from utils.common import now2str, randomStr
 from utils.metrics.evaluation import evaluate_average
 import numpy as np
 class LLMmodel():
@@ -10,7 +10,8 @@ class LLMmodel():
         self.prompt = prompt
         self.data = data
         if not runID:
-            runID = randomStr(6)
+            # runID = randomStr(6) # old scheme
+            runID = now2str()
         self.runID = runID
         self.path = f'results/{prompt.name}/{data.dataset.name}/{self.runID}'
         self.queryHandler.update_path(self.path)

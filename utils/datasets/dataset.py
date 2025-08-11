@@ -2,6 +2,7 @@ import numpy as np
 import json
 import random
 import typing
+from .data import SingleInput, SingleData, DataList
 class Dataset():
     def __init__(self, path:typing.Union[int, str]=''):
         self.data = self.load_data(path)
@@ -34,16 +35,35 @@ class Dataset():
     
     def get_test(self):
         return self.data[self.val_end:,:,:]
+
+    def buildSingleInput(self, i:int, j:int, copy:bool):
+        X, y = self.get_data(i, j, copy)
+        singleInput = SingleInput(X=X, i=i, j=j)
+        return SingleData(input=singleInput, y_true=y)
     
-    def get_data(self, i:int, j:int):
+    def buildBatchInput(self, batch_size:int=16, copy=True):
+        batch = []
+        for _ in range(batch_size):
+            i, j = self.get_random_index()
+            batch.append(self.buildSingleInput(i, j, copy))
+        return DataList(data=batch)
+    
+    def get_data(self, i:int, j:int, copy=False):
         '''只取数据，不取time of day, day of week；返回长为T的俩一维向量'''
         X = np.squeeze(self.data[i-self.T_input:i,j,0])
         y = np.squeeze(self.data[i:i+self.T_output,j,0])
+        if copy: # memmap -> numpy
+            X = np.array(X)
+            y = np.array(y)
         return X, y
     
-    def get_random_data(self):
+    def get_random_index(self):
         i = random.randint(self.val_end, self.t-self.T_output-1)
         j = random.randint(0, self.n-1)
+        return i, j
+    
+    def get_random_data(self):
+        i, j = self.get_random_index(i, j)
         return *self.get_data(i, j), i, j
     
     def get_random_batch(self, batch_size:int=16):
