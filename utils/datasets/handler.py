@@ -2,6 +2,7 @@ from .dataset import *
 from .graphHandler import *
 from .timeHandler import *
 from .statHandler import *
+from .data import *
 from ..metrics import plot_time_series, ndarray2plot
 class DatasetHanlder():
     def __init__(self, stat=False, loadData=False): # to be implemented by subclass
@@ -33,6 +34,29 @@ class DatasetHanlder():
             batch.append(self.buildSingleInput(i, j, copy))
         return DataList(data=batch)
     
+    def rebuildBatchInput(self, batch:DataList):
+        '''历史版本可能缺失一些信息，进行补全'''
+        for data in batch:
+            if data.input.time is None:
+                data.input.time = self.timeCalc.getStartTime(data.input.i)
+    
+    def getInputHA(self, input: SingleInput):
+        return self.stat.getRange(input.i - self.dataset.T_input, input.i, input.j, self.dataset.data)
+    
+    def getOutputHA(self, input: SingleInput):
+        return self.stat.getRange(input.i, input.i + self.dataset.T_output, input.j, self.dataset.data)
+        
+    def plotResultWithHA(self, data: SingleData, granularity=timedelta(minutes=5), show=True, savepath=None):
+        # 这个参数，主要是不想把 HA 加到 dataclass 了，没啥必要
+        plots = data.dataToPlot(granularity)
+        input = data.input
+        time = input.time
+        ha_input = self.getInputHA(input)
+        ha_pred = self.getOutputHA(input)
+        plots.append(ndarray2plot(ha_input, time - ha_input.size * granularity, 'HA_input', 'orange', granularity=granularity))
+        plots.append(ndarray2plot(ha_pred, time, 'HA_pred', 'purple', granularity=granularity))
+        plot_time_series(plots, title = f'{input.i} - {input.j} Prediction Result (HA)', show=show, savepath=savepath)
+        
     def plotData(self, l, r, j, figsize=(8, 6)):
         '''plot time interval [l, r) of sensor j '''
         time = self.timeCalc.getStartTime(l)
@@ -61,6 +85,7 @@ class PEMSDatasetHandler(DatasetHanlder):
     def __init__(self, x:int, stat=False, loadData=False):
         self.x = x
         if loadData:
+            # for i in tqdm(range(1), 'loading data'):
             self.dataset = PEMSDataset(x)
         self.graph = PEMSGraph(x)
         self.timeCalc = PEMSTimeCalc(x)

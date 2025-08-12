@@ -1,6 +1,7 @@
 import datetime
 import string
 import random
+import numpy as np
 def prints_and_returns(verbose=True, **kwargs):
     if verbose:
         strs = []
@@ -8,6 +9,12 @@ def prints_and_returns(verbose=True, **kwargs):
             strs.append(f'{name}:{val:.4f}')
         print(', '.join(strs))
     return kwargs.values()
+
+def vec2str(X:np.ndarray):
+    strs = []
+    for x in X:
+        strs.append('%.4f'%x)
+    return ', '.join(strs)
 
 def date2str(datetime:datetime.datetime, format='general'):
     if format == 'general':

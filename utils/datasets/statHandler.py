@@ -1,6 +1,6 @@
 import numpy as np
 from .dataset import PEMSDataset
-from collections import defaultdict
+from tqdm import tqdm
 class HAstat():
     '''see utils/baselines/HA.py for detail'''
     def __init__(self, data : np.ndarray, metric=np.mean):
@@ -15,11 +15,11 @@ class HAstat():
         t = data.shape[0]
         
         group = [[[[] for k in range(self.n_dow)] for j in range(self.n_tod)] for i in range(self.n)]
-        for i in range(t):
+        for i in tqdm(range(t), 'HA grouping'):
             for j in range(self.n):
                 group[j][self.itod[data[i, j, 1]]][self.idow[data[i, j, 2]]].append(data[i, j, 0])
         self.avg = [[[0. for k in range(self.n_dow)] for j in range(self.n_tod)] for i in range(self.n)]
-        for i in range(self.n):
+        for i in tqdm(range(self.n), 'HA calculating'):
             for j in range(self.n_tod):
                 for k in range(self.n_dow):
                     self.avg[i][j][k] = metric(group[i][j][k])
@@ -38,6 +38,10 @@ class HAstat():
     def get(self, i:int, j:int)->np.float32:
         # return self.avg[j][self.data[i,j,1]][self.data[i,j,2]]
         return self.avg[j][self.itod[self.data[i, j, 1]]][self.idow[self.data[i, j, 2]]]
+    
+    def getRange(self, l:int, r:int, j:int, data:np.ndarray): 
+        ''' 保证没有使用真实数据 (data[i,j,0])，没有数据泄露'''
+        return np.array([self.calc(j, data[i,j,1], data[i,j,2]) for i in range(l, r)])
     
     def calc(self, n:int, tod:np.float32, dow:np.float32)->np.float32:
         # return self.avg[n][tod][dow]

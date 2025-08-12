@@ -67,16 +67,15 @@ class SingleData:
     def evaluate(self):
         self.result = EvaluateResult(*evaluate_average(self.y_pred, self.y_true))
         
+    def dataToPlot(self, granularity=timedelta(minutes=5)):
+        time = self.input.time
+        return [ndarray2plot(self.input.X, time - self.input.X.size * granularity, 'input', 'blue', granularity=granularity),
+            ndarray2plot(self.y_true, time, 'y_true', 'red', granularity=granularity),
+            ndarray2plot(self.y_pred, time, 'y_pred', 'green', granularity=granularity)]
+        
     def plotResult(self, granularity=timedelta(minutes=5), show=True, savepath=None):
         # 这个参数，主要是不想把粒度加到 dataclass 了，没啥必要
-        time = self.input.time
-        plot_time_series(
-            [ndarray2plot(self.input.X, time - self.input.X.size * granularity, 'input', 'blue', granularity=granularity),
-            ndarray2plot(self.y_true, time, 'y_true', 'red', granularity=granularity),
-            ndarray2plot(self.y_pred, time, 'y_pred', 'green', granularity=granularity)],
-            title = f'{self.input.i} - {self.input.j} Prediction Result', show=show, savepath=savepath
-        )
-            
+        plot_time_series(self.dataToPlot(granularity), title = f'{self.input.i} - {self.input.j} Prediction Result', show=show, savepath=savepath)
     
 @dataclass
 class DataList:

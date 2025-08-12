@@ -65,8 +65,10 @@ def plot_time_series(data_series, title="Time Series Plot",
     plt.tight_layout()
     if savepath:
         plt.savefig(savepath)
+        print(len(data_series), savepath)
     if show:
         plt.show()
+    plt.close()
     
 def ndarray2plot(arr:NDArray[np.float32], startTime:datetime, name:str, color:str, linestype='-', granularity=timedelta(minutes=5)):
     timestamps = [startTime + i * granularity for i in range(arr.size)]
