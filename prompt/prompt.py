@@ -28,9 +28,9 @@ class PromptPlain(Prompt):
         
     def generate(self, handler:DatasetHanlder, data:SingleInput):
         prompt = TASK_DESC
-        startTime = handler.timeCalc.getStartTime(data.i)
-        endTime = startTime + datetime.timedelta(hours=1)
-        futureTime = endTime + datetime.timedelta(hours=1)
+        endTime = handler.timeCalc.getStartTime(data.i)
+        startTime = handler.timeCalc.getStartTime(data.i - data.X.size)
+        futureTime = handler.timeCalc.getStartTime(data.i + data.X.size)
         week = handler.timeCalc.getWeek(data.i)
         prompt += f'探测器位于{handler.space}。'
         prompt += f'你有已知数据，为12个连续时间区间(每个时间区间的长度为5分钟)的流量。\n'

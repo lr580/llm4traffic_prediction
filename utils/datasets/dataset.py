@@ -27,18 +27,6 @@ class Dataset():
     
     def get_test(self):
         return self.data[self.val_end:,:,:]
-
-    def buildSingleInput(self, i:int, j:int, copy:bool):
-        X, y = self.get_data(i, j, copy)
-        singleInput = SingleInput(X=X, i=i, j=j)
-        return SingleData(input=singleInput, y_true=y)
-    
-    def buildBatchInput(self, batch_size:int=16, copy=True):
-        batch = []
-        for _ in range(batch_size):
-            i, j = self.get_random_index()
-            batch.append(self.buildSingleInput(i, j, copy))
-        return DataList(data=batch)
     
     def get_data(self, i:int, j:int, copy=False):
         '''只取数据，不取time of day, day of week；返回长为T的俩一维向量'''

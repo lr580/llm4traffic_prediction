@@ -30,6 +30,7 @@ class PEMSTimeCalc(TimeCalc):
         else:
             raise ValueError("Invalid dataset number")
         super().__init__(startTime, granularity)
+        # 根据绘图结果，认为数据已经处理了时间的时区为当地时间，无需换算
         
 if __name__ == "__main__":
     tc = PEMSTimeCalc(3)

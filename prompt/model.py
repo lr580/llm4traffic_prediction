@@ -34,12 +34,12 @@ class LLMmodel():
             data.evaluate()
             if verbose>=2:
                 print('index:', idx)
-                print('Prompt:', prompt)
+                if verbose>=3:
+                    print('Prompt:', prompt)
                 print('Answer:', y_true)
                 print('Pred:', y_pred)
                 print('Result:', data.result)
         datalist.evaluate()
         if verbose>=1:
             print('Average:', datalist.totalResult)
-        if verbose>=0:
-            datalist.save(os.path.join(self.path, 'results_tiny_test.json'))
+        datalist.save(os.path.join(self.path, 'results_tiny_test.json'))
