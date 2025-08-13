@@ -56,7 +56,8 @@ class DeepseekQuery(CacheQuery):
         if not apikey:
             self.apikey = deepseek_apikey
         self.client = OpenAI(api_key=self.apikey, base_url="https://api.deepseek.com")
-        self.model = model
+        self.model = model 
+        """ 'deepseek-chat' or 'deepseek-reasoner' """
         
 if __name__ == "__main__":
     q = DeepseekQuery('results/testClass')

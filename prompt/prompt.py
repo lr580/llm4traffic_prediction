@@ -134,7 +134,7 @@ class PromptHANeighbor(PromptHA, PromptNeighbor):
         prompt += vec2str(data.X) + '\n'
         prompt += self.sayInputHA(handler, data) + '\n'
         prompt += self.sayNeighbors(handler, data)
-        prompt += self.sayNeighborFlowsWithHA(handler, data)
+        prompt += self.sayNeighborFlowsWithHA(handler, data) if self.neiHA else self.sayNeighborFlows(handler, data)
         prompt += self.sayOutputTimeRange(handler, data)
         prompt += self.sayTargetLocation(data)
         prompt += self.sayOutputHA(handler, data) + '\n'
