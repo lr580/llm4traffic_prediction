@@ -8,7 +8,7 @@ plt.rcParams['font.sans-serif'] = ['SimHei', 'Microsoft YaHei', 'KaiTi', 'Arial 
 plt.rcParams['axes.unicode_minus'] = False
 
 def plot_time_series(data_series, title="Time Series Plot", 
-                     xlabel="Time", ylabel="Traffic Flow", figsize=(6, 4), show=True, savepath=None):
+                     xlabel="Time", ylabel="Traffic Flow", figsize=(6, 4), show=True, savepath:str=None):
     """
     绘制多组时间序列数据的折线图
     
@@ -65,7 +65,65 @@ def plot_time_series(data_series, title="Time Series Plot",
     plt.tight_layout()
     if savepath:
         plt.savefig(savepath)
-        print(len(data_series), savepath)
+        # print(len(data_series), savepath)
+    if show:
+        plt.show()
+    plt.close()
+    
+def plot_grouped_bar(x_labels, model_names, data, title="", xlabel="", ylabel="", colors=None, rotation=45, figsize=(6, 4), show=True, savepath:str=None):
+    """
+    绘制多个柱状图合并显示，支持任意横坐标标签字符串
+    
+    参数:
+    x_labels (list): 横坐标标签列表(任意字符串)
+    model_names (list): 模型名称列表，对应每个柱状图的标签
+    data (list of lists): 二维数据列表，形状为 [模型数量, 数据点数量]
+    title (str): 图表标题
+    xlabel (str): 横坐标标签
+    ylabel (str): 纵坐标标签
+    colors (list): 每个模型柱子的颜色列表
+    rotation (int): 横坐标标签旋转角度（防止重叠）
+    """
+    num_models = len(model_names)
+    num_points = len(x_labels)
+    
+    # 颜色设置（默认使用tab10色板）
+    if colors is None:
+        colors = plt.cm.tab10(np.linspace(0, 1, num_models))
+    
+    # 创建画布
+    fig, ax = plt.subplots(figsize=figsize)
+    
+    # 计算每个柱子的宽度和位置
+    total_width = 0.8  # 每组柱子总宽度
+    bar_width = total_width / num_models  # 单个柱子宽度
+    bar_positions = np.arange(num_points)  # 横坐标基准位置
+    
+    # 绘制每个模型的柱子
+    for i in range(num_models):
+        offset = (i - num_models/2) * bar_width + bar_width/2
+        ax.bar(
+            bar_positions + offset,
+            data[i],
+            width=bar_width,
+            color=colors[i],
+            label=model_names[i]
+        )
+    
+    # 设置横坐标
+    ax.set_xticks(bar_positions)
+    ax.set_xticklabels(x_labels, rotation=rotation, ha='right')
+    ax.set_xlabel(xlabel)
+    
+    # 添加标签和标题
+    ax.set_ylabel(ylabel)
+    ax.set_title(title)
+    ax.legend(loc='best')
+    
+    # 自动调整布局
+    plt.tight_layout()
+    if savepath:
+        plt.savefig(savepath)
     if show:
         plt.show()
     plt.close()
@@ -123,4 +181,35 @@ if __name__ == "__main__":
         title="环境传感器数据 (2023-06-01)",
         ylabel="测量值",
         figsize=(14, 7)
+    )
+    
+    
+    np.random.seed(42)
+    num_points = 16
+    num_models = 3
+    
+    # 创建16个随机的离散点名称
+    x_labels = [
+        f"Point-{chr(ord('A') + i)}" for i in range(num_points)
+    ]
+    
+    # 模型名称
+    model_names = ["Model-A", "Model-B", "Model-C"]
+    
+    # 生成模型数据（每个模型在16个点上的MAE值）
+    data = [
+        np.random.uniform(0.1, 0.5, num_points),  # Model-A
+        np.random.uniform(0.2, 0.6, num_points),  # Model-B
+        np.random.uniform(0.05, 0.4, num_points)  # Model-C
+    ]
+    
+    # 调用绘图函数
+    plot_grouped_bar(
+        x_labels=x_labels,
+        model_names=model_names,
+        data=data,
+        title="MAE Comparison on 16 Datapoints",
+        xlabel="Evaluation Points",
+        ylabel="Mean Absolute Error (MAE)",
+        rotation=45  # 旋转45度避免标签重叠
     )

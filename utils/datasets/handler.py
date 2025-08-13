@@ -57,15 +57,22 @@ class DatasetHanlder():
         plots.append(ndarray2plot(ha_pred, time, 'HA_pred', 'purple', granularity=granularity))
         plot_time_series(plots, title = f'{input.i} - {input.j} Prediction Result (HA)', show=show, savepath=savepath)
         
-    def plotData(self, l, r, j, figsize=(8, 6)):
-        '''plot time interval [l, r) of sensor j '''
+    def getPlotData(self, l:int, r:int, j:int, figsize=(8, 6)):
         time = self.timeCalc.getStartTime(l)
         granularity = self.timeCalc.granularity
         X = np.squeeze(self.dataset.data[l:r, j, 0])
-        plot_time_series(
-            [ndarray2plot(X, time, 'flow', 'b', granularity=granularity)],
-            title=f'Traffic Flow in time [{l}, {r}) sensor {j} {self.timeCalc.getWeek(l)}', figsize=figsize
-        )
+        return [ndarray2plot(X, time, 'flow', 'b', granularity=granularity)]
+        
+    def plotData(self, l:int, r:int, j:int, figsize=(8, 6)):
+        '''plot time interval [l, r) of sensor j '''
+        plot_time_series(self.getPlotData(l, r, j, figsize), title=f'Traffic Flow in time [{l}, {r}) sensor {j} {self.timeCalc.getWeek(l)}', figsize=figsize)
+        
+    def plotDataWithHA(self, l:int, r:int, j:int, figsize=(8, 6)):
+        '''plot time interval [l, r) of sensor j with HA'''
+        plots = self.getPlotData(l, r, j, figsize)
+        ha = self.stat.getRange(l, r, j, self.dataset.data)
+        plots.append(ndarray2plot(ha, self.timeCalc.getStartTime(l), 'HA', 'orange', granularity=self.timeCalc.granularity))
+        plot_time_series(plots, title=f'Traffic Flow in time [{l}, {r}) sensor {j} {self.timeCalc.getWeek(l)}', figsize=figsize)
 
 class PEMSDatasetHandler(DatasetHanlder):
     def load_space(self):

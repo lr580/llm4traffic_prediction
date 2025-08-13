@@ -4,7 +4,7 @@ from numpy.typing import NDArray
 import json
 import os
 from ..common import date2str, str2date
-from ..metrics import evaluate_average, plot_time_series, ndarray2plot
+from ..metrics import evaluate_average, plot_time_series, ndarray2plot, plot_grouped_bar
 from datetime import datetime, timedelta
 # from typing import Union
 @dataclass
@@ -39,6 +39,9 @@ class EvaluateResult:
     
     rmse: float
     '''Root Mean Squared Error (RMSE) '''
+    
+    def get(self, metric):
+        return getattr(self, metric)
 
 @dataclass
 class SingleData:
@@ -124,3 +127,16 @@ class DataEncoder(json.JSONEncoder): # (json.JSONEncoder):
         if isinstance(obj, datetime):
             return date2str(obj)
         return json.JSONEncoder.default(self, obj)
+    
+def plotCompareDataResult(datalists: list[DataList], names:list[str], metric:str, savepath:str=None, show=True, figsize=(12,6)):
+    '''假定每个所用数据及其顺序相同'''
+    x_labels = []
+    for data in datalists[0]:
+        x_labels.append(f'{data.input.i} - {data.input.j}')
+    arrs = []
+    for datalist in datalists:
+        arr = []
+        for data in datalist:
+            arr.append(data.result.get(metric))
+        arrs.append(arr)
+    plot_grouped_bar(x_labels, names, arrs, savepath=savepath, show=show, figsize=figsize, title=f'Comparison of Different Prompts among {metric.upper()}', xlabel='Data', ylabel=metric.upper())
