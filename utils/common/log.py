@@ -13,7 +13,10 @@ def prints_and_returns(verbose=True, **kwargs):
 def vec2str(X:np.ndarray):
     strs = []
     for x in X:
-        strs.append('%.4f'%x)
+        if x == int(x):
+            strs.append('%d' % x)
+        else:
+            strs.append('%.4f' % x)
     return ', '.join(strs)
 
 def date2str(datetime:datetime.datetime, format='general'):

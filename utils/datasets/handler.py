@@ -40,8 +40,12 @@ class DatasetHanlder():
             if data.input.time is None:
                 data.input.time = self.timeCalc.getStartTime(data.input.i)
     
-    def getInputHA(self, input: SingleInput):
-        return self.stat.getRange(input.i - self.dataset.T_input, input.i, input.j, self.dataset.data)
+    def getInputHA(self, input: SingleInput, nei=-1):
+        if nei == -1:
+            j = input.j
+        else:
+            j = nei
+        return self.stat.getRange(input.i - self.dataset.T_input, input.i, j, self.dataset.data)
     
     def getOutputHA(self, input: SingleInput):
         return self.stat.getRange(input.i, input.i + self.dataset.T_output, input.j, self.dataset.data)
@@ -77,14 +81,16 @@ class DatasetHanlder():
 class PEMSDatasetHandler(DatasetHanlder):
     def load_space(self):
         # the information from https://www.sciencedirect.com/science/article/pii/S0957417422011654
+        s = '美国加州(California, USA)的'
         if self.x == 3:
-            return '中北部区域(North Central Area)'
+            s += '中北部区域(North Central Area)'
         elif self.x == 4:
-            return '旧金山湾区(San Francisco Bay Area)'
+            s += '旧金山湾区(San Francisco Bay Area)'
         elif self.x == 7:
-            return '洛杉矶区域(Los Angeles Area)'
+            s += '洛杉矶区域(Los Angeles Area)'
         elif self.x == 8:
-            return '圣贝纳迪诺区(San Bernardino Area)'
+            s += '圣贝纳迪诺区(San Bernardino Area)'
+        return s
         
     def load_name(self):
         return f'PEMS0{self.x}'

@@ -6,6 +6,7 @@ import os
 from ..common import date2str, str2date
 from ..metrics import evaluate_average, plot_time_series, ndarray2plot, plot_grouped_bar
 from datetime import datetime, timedelta
+import pandas as pd
 # from typing import Union
 @dataclass
 class SingleInput:
@@ -140,3 +141,9 @@ def plotCompareDataResult(datalists: list[DataList], names:list[str], metric:str
             arr.append(data.result.get(metric))
         arrs.append(arr)
     plot_grouped_bar(x_labels, names, arrs, savepath=savepath, show=show, figsize=figsize, title=f'Comparison of Different Prompts among {metric.upper()}', xlabel='Data', ylabel=metric.upper())
+    
+def getDataResults(datalists: list[DataList], names: list[str]):
+    data = []
+    for datalist in datalists:
+        data.append(vars(datalist.totalResult))
+    return pd.DataFrame(data, index=names)

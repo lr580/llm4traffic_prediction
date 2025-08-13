@@ -51,12 +51,12 @@ with open(r'prompt/deepseek_apikey.txt') as f:
     deepseek_apikey = f.read().strip()
     
 class DeepseekQuery(CacheQuery):
-    def __init__(self, path='', apikey=''):
+    def __init__(self, path='', apikey='', model='deepseek-chat'):
         super().__init__(path)
         if not apikey:
             self.apikey = deepseek_apikey
         self.client = OpenAI(api_key=self.apikey, base_url="https://api.deepseek.com")
-        self.model = 'deepseek-chat'
+        self.model = model
         
 if __name__ == "__main__":
     q = DeepseekQuery('results/testClass')
