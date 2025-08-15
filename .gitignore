@@ -1,3 +1,5 @@
 *.txt
 *.pyc
 results/
+img/
+*.pdf

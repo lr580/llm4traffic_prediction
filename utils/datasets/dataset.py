@@ -71,7 +71,7 @@ class PEMSDataset(Dataset):
     def load_data(self, x:int):
         with open(f'data/processed/PEMS0{x}/desc.json', encoding='utf-8') as f:
             desc = json.load(f)
-        shape = desc['shape']
+        shape = tuple(desc['shape']) # 要用 tuple 而不是 list，否则一些版本会出问题
         filepath = f'data/processed/PEMS0{x}/data.dat'
         return np.memmap(filepath, dtype=np.float32, mode='r', shape=shape)
     

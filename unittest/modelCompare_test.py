@@ -20,6 +20,10 @@ for x in [3,4,7,8]:
     list4 = DataList.load(f'results/HA_neighbor/PEMS0{x}/32-1/results_tiny_test.json')
     lists = [list1, list2, list3, list4]
     names = ['Plain', 'Neighbor', 'HA', 'HA_Nei']
+    if os.path.exists(f'results/HA_neighbor/PEMS0{x}/32-1r/results_tiny_test.json'):
+        list5 = DataList.load(f'results/HA_neighbor/PEMS0{x}/32-1r/results_tiny_test.json')
+        lists.append(list5)
+        names.append('HA_Nei(T)')
     print(f'\nPEMS0{x}-32:')
     print(getDataResults(lists, names))
 
