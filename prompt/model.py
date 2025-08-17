@@ -19,7 +19,29 @@ class LLMmodel():
         self.queryHandler.update_path(self.path)
         
     def output2vec(self, output:str):
-        array = eval(output)
+        try:
+            array = eval(output) # core code
+            array = list(array) # robustness for tuple
+        except Exception as e:
+            print("Error input:", output)
+            lidx, ridx = output.rfind('['), output.rfind(']')
+            if lidx>=0 and ridx>=0:
+                try:
+                    array = eval(output[lidx:ridx+1])
+                except Exception as e:
+                    print("Error input2:", output[lidx:ridx+1])
+                    array = [0.] * self.handler.dataset.T_output
+            else:
+                array = [0.] * self.handler.dataset.T_output
+        if len(array) < self.handler.dataset.T_output: # robustness
+            array += [0.] * (self.handler.dataset.T_output - len(array))
+        try:
+            for i in range(len(array)): # robustness for int/str
+                array[i] = float(array[i]) 
+        except Exception as e:
+            array = [0.] * self.handler.dataset.T_output
+        if len(array) > self.handler.dataset.T_output: # robustness
+            array = array[:self.handler.dataset.T_output]
         return np.array(array)
     
     def tiny_test(self, datalist:DataList, verbose=2):

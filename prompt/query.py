@@ -17,7 +17,7 @@ class CacheQuery():
         self.path = path
         os.makedirs(self.path, exist_ok=True)
         
-    def query(self, queryID:str, userMessage='', message='',  systemMessage=''):
+    def query(self, queryID:str, userMessage='', message=[],  systemMessage=''):
         filepath = os.path.join(self.path, f'{queryID}.json')
         if os.path.exists(filepath):
             content = self.readCache(filepath)
@@ -32,16 +32,7 @@ class CacheQuery():
         return content
                 
     def makeQuery(self, filepath:str, message:list)->str:
-        response = self.client.chat.completions.create(
-            model=self.model,
-            messages=message,
-            stream=False,
-        )
-        with open(filepath, 'w', encoding='utf-8') as f:
-            result = response.model_dump_json(indent=2)
-            f.write(result)
-        content = response.choices[0].message.content
-        return content
+        return '' # to be implememted by subclass
 
     def extractCache(self, data:dict)->str:
         return '' # to be implememted by subclass
@@ -62,6 +53,18 @@ class DeepseekQuery(CacheQuery):
         self.client = OpenAI(api_key=self.apikey, base_url="https://api.deepseek.com")
         self.model = model 
         """ 'deepseek-chat' or 'deepseek-reasoner' """
+
+    def makeQuery(self, filepath:str, message:list)->str:
+        response = self.client.chat.completions.create(
+            model=self.model,
+            messages=message,
+            stream=False,
+        )
+        with open(filepath, 'w', encoding='utf-8') as f:
+            result = response.model_dump_json(indent=2)
+            f.write(result)
+        content = response.choices[0].message.content
+        return str(content)
 
     def extractCache(self, data:dict)->str:
         return data['choices'][0]['message']['content']

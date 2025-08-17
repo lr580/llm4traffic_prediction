@@ -6,8 +6,9 @@ class Prompt():
     INPUT_DESC = '你有已知数据，为12个连续时间区间(每个时间区间的长度为5分钟)的流量。'
     SINGLE_OUTPUT_FORMAT_DESC = '请你按照Python列表格式输出流量，保留4位小数。你只需要输出答案本身，无需输出任何计算过程和解释理由。'
     # 在下面的输入里，探测器包含12个连续时间区间的流量数据，每个时间区间的长度为5分钟。
-    def __init__(self):
+    def __init__(self, lang='en'):
         self.name = '' # to be implemented by subclass
+        self.lang = lang # 'en' / 'zh' , for future usage
         
     def generate(self, handler:DatasetHanlder, data:SingleInput) -> str:
         return '' # to be implemented by subclass
@@ -39,7 +40,8 @@ class Prompt():
 
 class PromptPlain(Prompt):
     '''单点，纯原始数据'''
-    def __init__(self):
+    def __init__(self, lang='en'):
+        super().__init__(lang)
         self.name = 'plain'
         
     def generate(self, handler:DatasetHanlder, data:SingleInput) -> str:
@@ -54,7 +56,8 @@ class PromptPlain(Prompt):
     
 class PromptHA(Prompt):
     '''单点数据，提供历史平均作参考'''
-    def __init__(self):
+    def __init__(self, lang='en'):
+        super().__init__(lang)
         self.name = 'HA'
         
     def sayInputHA(self, handler:DatasetHanlder, data: SingleInput, nei=-1):
