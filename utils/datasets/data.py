@@ -7,7 +7,7 @@ from ..common import date2str, str2date
 from ..metrics import evaluate_average, plot_time_series, ndarray2plot, plot_grouped_bar
 from datetime import datetime, timedelta
 import pandas as pd
-# from typing import Union
+from typing import Optional
 @dataclass
 class SingleInput:
     '''包含了构成 propmt 所需的必要数据信息'''
@@ -20,7 +20,7 @@ class SingleInput:
     j : int
     ''' 空间点编号 '''
     
-    time: datetime = None
+    time: Optional[datetime] = None
     ''' 要预测的时间区间的起始时间刻'''
     # 虽然说有 handler (timeCalc) 可以不记录，但是记录方便后序阅读结果，更好调试和发现问题 (因为如果严格说数据冗余的话， X 也是冗余的，有 i, j 就行)，设计的目的是为了更好阅读、debug，不是节省空间
     
@@ -49,13 +49,13 @@ class SingleData:
     input : SingleInput
     ''' 输入数据(历史时间区间数据) '''
     
-    y_true : NDArray[np.float32] = None
+    y_true : Optional[NDArray[np.float32]] = None
     ''' 答案数据(未来时间区间数据) '''
 
-    y_pred: NDArray[np.float32] = None
+    y_pred: Optional[NDArray[np.float32]] = None
     ''' 输出数据(未来时间区间数据) '''
     
-    result : EvaluateResult = None
+    result : Optional[EvaluateResult] = None
     ''' 评估结果 '''
     
     def __post_init__(self):
@@ -73,11 +73,12 @@ class SingleData:
         
     def dataToPlot(self, granularity=timedelta(minutes=5)):
         time = self.input.time
+        assert time is not None and self.y_true is not None and self.y_pred is not None
         return [ndarray2plot(self.input.X, time - self.input.X.size * granularity, 'input', 'blue', granularity=granularity),
             ndarray2plot(self.y_true, time, 'y_true', 'red', granularity=granularity),
             ndarray2plot(self.y_pred, time, 'y_pred', 'green', granularity=granularity)]
         
-    def plotResult(self, granularity=timedelta(minutes=5), show=True, savepath=None):
+    def plotResult(self, granularity=timedelta(minutes=5), show=True, savepath=''):
         # 这个参数，主要是不想把粒度加到 dataclass 了，没啥必要
         plot_time_series(self.dataToPlot(granularity), title = f'{self.input.i} - {self.input.j} Prediction Result', show=show, savepath=savepath)
     
@@ -86,7 +87,7 @@ class DataList:
     data : list[SingleData]
     ''' 数据列表 '''
     
-    totalResult: EvaluateResult = None
+    totalResult: Optional[EvaluateResult] = None
     ''' 整体评估结果 '''
     
     def __iter__(self):
@@ -129,7 +130,7 @@ class DataEncoder(json.JSONEncoder): # (json.JSONEncoder):
             return date2str(obj)
         return json.JSONEncoder.default(self, obj)
     
-def plotCompareDataResult(datalists: list[DataList], names:list[str], metric:str, savepath:str=None, show=True, figsize=(12,6)):
+def plotCompareDataResult(datalists: list[DataList], names:list[str], metric:str, savepath:str='', show=True, figsize=(12,6)):
     '''假定每个所用数据及其顺序相同'''
     x_labels = []
     for data in datalists[0]:
@@ -138,6 +139,7 @@ def plotCompareDataResult(datalists: list[DataList], names:list[str], metric:str
     for datalist in datalists:
         arr = []
         for data in datalist:
+            assert data.result is not None
             arr.append(data.result.get(metric))
         arrs.append(arr)
     plot_grouped_bar(x_labels, names, arrs, savepath=savepath, show=show, figsize=figsize, title=f'Comparison of Different Prompts among {metric.upper()}', xlabel='Data', ylabel=metric.upper())

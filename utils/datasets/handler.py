@@ -4,6 +4,7 @@ from .timeHandler import *
 from .statHandler import *
 from .data import *
 from ..metrics import plot_time_series, ndarray2plot
+import datetime
 class DatasetHanlder():
     def __init__(self, stat=False, loadData=False): # to be implemented by subclass
         self.space = self.load_space()
@@ -11,7 +12,7 @@ class DatasetHanlder():
         if loadData:
             self.dataset = Dataset()
         self.graph = Graph()
-        self.timeCalc = TimeCalc()
+        self.timeCalc = TimeCalc(datetime.datetime.now(), datetime.timedelta(minutes=5))
         if stat:
             self.stat = HAstat(np.zeros((1,1),np.float32))
             
@@ -50,11 +51,12 @@ class DatasetHanlder():
     def getOutputHA(self, input: SingleInput):
         return self.stat.getRange(input.i, input.i + self.dataset.T_output, input.j, self.dataset.data)
         
-    def plotResultWithHA(self, data: SingleData, granularity=timedelta(minutes=5), show=True, savepath=None):
+    def plotResultWithHA(self, data: SingleData, granularity=timedelta(minutes=5), show=True, savepath=''):
         # 这个参数，主要是不想把 HA 加到 dataclass 了，没啥必要
         plots = data.dataToPlot(granularity)
         input = data.input
         time = input.time
+        assert time is not None
         ha_input = self.getInputHA(input)
         ha_pred = self.getOutputHA(input)
         plots.append(ndarray2plot(ha_input, time - ha_input.size * granularity, 'HA_input', 'orange', granularity=granularity))

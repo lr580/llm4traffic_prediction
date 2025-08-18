@@ -5,7 +5,7 @@ import typing
 from .data import SingleInput, SingleData, DataList
 class Dataset():
     def __init__(self, path:typing.Union[int, str]=''):
-        self.data = self.load_data(path)
+        self.data = self.load_data(str(path))
         self.train_ratio = 0.6
         self.val_ratio = 0.2
         self.test_ratio = 1 - self.train_ratio - self.val_ratio
@@ -51,7 +51,7 @@ class Dataset():
         return i, j
     
     def get_random_data(self):
-        i, j = self.get_random_index(i, j)
+        i, j = self.get_random_index()
         return *self.get_data(i, j), i, j
     
     def get_random_batch(self, batch_size:int=16):

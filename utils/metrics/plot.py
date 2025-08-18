@@ -2,13 +2,15 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from datetime import datetime, timedelta
 import numpy as np
-from numpy.typing import NDArray
+from numpy.typing import NDArray, ArrayLike
+from typing import cast
+from matplotlib.cm import get_cmap
 
 plt.rcParams['font.sans-serif'] = ['SimHei', 'Microsoft YaHei', 'KaiTi', 'Arial Unicode MS']
 plt.rcParams['axes.unicode_minus'] = False
 
 def plot_time_series(data_series, title="Time Series Plot", 
-                     xlabel="Time", ylabel="Traffic Flow", figsize=(6, 4), show=True, savepath:str=None):
+                     xlabel="Time", ylabel="Traffic Flow", figsize=(6, 4), show=True, savepath:str=''):
     """
     绘制多组时间序列数据的折线图
     
@@ -38,7 +40,7 @@ def plot_time_series(data_series, title="Time Series Plot",
         
         # 绘制折线
         ax.plot(
-            times,
+            cast("ArrayLike", times),
             series['values'],
             label=series['name'],
             color=color,
@@ -70,7 +72,7 @@ def plot_time_series(data_series, title="Time Series Plot",
         plt.show()
     plt.close()
     
-def plot_grouped_bar(x_labels, model_names, data, title="", xlabel="", ylabel="", colors=None, rotation=45, figsize=(6, 4), show=True, savepath:str=None):
+def plot_grouped_bar(x_labels, model_names, data, title="", xlabel="", ylabel="", colors=None, rotation=45, figsize=(6, 4), show=True, savepath:str=''):
     """
     绘制多个柱状图合并显示，支持任意横坐标标签字符串
     
@@ -89,7 +91,8 @@ def plot_grouped_bar(x_labels, model_names, data, title="", xlabel="", ylabel=""
     
     # 颜色设置（默认使用tab10色板）
     if colors is None:
-        colors = plt.cm.tab10(np.linspace(0, 1, num_models))
+        # colors = plt.cm.tab10(np.linspace(0, 1, num_models))
+        colors = get_cmap("tab10")(np.linspace(0, 1, num_models))
     
     # 创建画布
     fig, ax = plt.subplots(figsize=figsize)

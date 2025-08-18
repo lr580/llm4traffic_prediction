@@ -6,6 +6,8 @@
 
 ## 项目结构
 
+包依赖参见 `requirements.txt`。
+
 数据集 `data/` 
 
 - > `raw/` 原始数据 (自行下载，如参考 [STD-MAE](https://github.com/Jimmy-7664/STD-MAE) 的 `raw_data/`)

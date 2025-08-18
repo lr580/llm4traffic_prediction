@@ -1,6 +1,7 @@
 import numpy as np
 from .dataset import PEMSDataset
 from tqdm import tqdm
+from typing import cast
 class HAstat():
     '''see utils/baselines/HA.py for detail'''
     def __init__(self, data : np.ndarray, metric=np.mean):
@@ -37,7 +38,8 @@ class HAstat():
     
     def get(self, i:int, j:int)->np.float32:
         # return self.avg[j][self.data[i,j,1]][self.data[i,j,2]]
-        return self.avg[j][self.itod[self.data[i, j, 1]]][self.idow[self.data[i, j, 2]]]
+        res = self.avg[j][self.itod[self.data[i, j, 1]]][self.idow[self.data[i, j, 2]]]
+        return cast("np.float32", res)
     
     def getRange(self, l:int, r:int, j:int, data:np.ndarray): 
         ''' 保证没有使用真实数据 (data[i,j,0])，没有数据泄露'''
@@ -45,7 +47,8 @@ class HAstat():
     
     def calc(self, n:int, tod:np.float32, dow:np.float32)->np.float32:
         # return self.avg[n][tod][dow]
-        return self.avg[n][self.itod[tod]][self.idow[dow]]
+        res = self.avg[n][self.itod[tod]][self.idow[dow]]
+        return cast("np.float32", res)
     
 class PEMS_HAstat(HAstat):
     def __init__(self, dataset:PEMSDataset, train_ratio=0.6, metric=np.mean, l=0, r=0, customInterval=False):

@@ -2,6 +2,7 @@ import datetime
 import string
 import random
 import numpy as np
+from typing import cast
 def prints_and_returns(verbose=True, **kwargs):
     if verbose:
         strs = []
@@ -25,11 +26,12 @@ def date2str(datetime:datetime.datetime, format='general'):
     elif format == 'file':
         return datetime.strftime('%Y%m%d%H%M%S')
     
-def str2date(date_string: str, format='general'):
+def str2date(date_string: str, format='general') -> datetime.datetime:
     if format == 'general':
-        return datetime.datetime.strptime(date_string, '%Y-%m-%d %H:%M:%S')
+        res = datetime.datetime.strptime(date_string, '%Y-%m-%d %H:%M:%S')
     elif format == 'file':
-        return datetime.datetime.strptime(date_string, '%Y%m%d%H%M%S')
+        res = datetime.datetime.strptime(date_string, '%Y%m%d%H%M%S')
+    return cast('datetime.datetime', res)
     
 def now2str(format='file'):
     return date2str(datetime.datetime.now(), format)

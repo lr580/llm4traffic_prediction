@@ -4,3 +4,4 @@ results/
 img/
 *.pdf
 *.zip
+!requirements.txt

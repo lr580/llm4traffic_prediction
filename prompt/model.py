@@ -2,7 +2,7 @@ from .query import CacheQuery
 from .prompt import Prompt
 from utils.datasets import DatasetHanlder, DataList
 from utils.common import now2str
-from utils.metrics import evaluate_average
+from datetime import timedelta
 import numpy as np
 import os
 from tqdm import tqdm
@@ -65,3 +65,10 @@ class LLMmodel():
         if verbose>=1:
             print('Average:', datalist.totalResult)
         datalist.save(os.path.join(self.path, 'results_tiny_test.json'))
+        
+    def cost(self, unitTime=timedelta(seconds=7), unitMoney=0.001):
+        '''求完成预测要多少时间和金钱(调用API费用)'''
+        n = self.handler.dataset.test_ratio * self.handler.dataset.n * self.handler.dataset.t
+        totalTime = unitTime * n
+        totalMoney = unitMoney * n
+        return totalTime, totalMoney

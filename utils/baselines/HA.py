@@ -28,20 +28,21 @@ def main(filepath, shape):
     N = data.shape[1]
     # avg = defaultdict(defaultdict(defaultdict(list)))
     avg = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
+    res = defaultdict(lambda: defaultdict(dict))
     for i in range(train_data.shape[0]):
         for j in range(N):
             avg[j][train_data[i, j, 1]][train_data[i, j, 2]].append(train_data[i, j, 0])
     for i in avg.keys():
         for j in avg[i].keys():
             for k in avg[i][j].keys():
-                avg[i][j][k] = np.mean(avg[i][j][k])
+                res[i][j][k] = np.mean(avg[i][j][k])
                 # avg[i][j][k] = np.median(avg[i][j][k])
 
     # test
     y_pred = np.zeros(test_data.shape[:2])
     for i in range(test_data.shape[0]):
         for j in range(N):
-            y_pred[i, j] = avg[j][test_data[i, j, 1]][test_data[i, j, 2]]
+            y_pred[i, j] = res[j][test_data[i, j, 1]][test_data[i, j, 2]]
     
     # evaluate
     # for i in range(5):

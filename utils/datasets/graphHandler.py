@@ -4,7 +4,7 @@ class Graph():
     def load_graph(self, filepath:str):
         with open(filepath, 'rb') as f:
             self.g:np.ndarray = pickle.load(f)
-    def __init__(self, filepath:str):
+    def __init__(self, filepath:str=''):
         self.load_graph(filepath)
         
     def get_neighbors(self, node:int):
