@@ -5,3 +5,4 @@ img/
 *.pdf
 *.zip
 !requirements.txt
+report.md
