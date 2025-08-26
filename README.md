@@ -1,8 +1,10 @@
-**介绍：**一个调用 LLM API 进行时空序列预测(交通流量预测)的框架。核心功能亮点如下：
+**介绍：** 一个调用 LLM API 进行时空序列预测(交通流量预测)的框架。核心功能亮点如下：
 
 1. 封装了常用操作，如生成数据子集、带缓存的 API 调用、日志和可视化等。
 2. 支持快速扩展，可以方便添加多种不同的 API、提示词、数据集。
 3. 实现了几种不同的常用提示词和 HA 基准模型。
+
+> 版权所有，如您需要使用本项目(如使用本文档提供的实验结果数据)，请标记出处/引用。
 
 ## 项目结构
 
@@ -10,7 +12,7 @@
 
 数据集 `data/`
 
-- > `raw/` 原始数据 (自行下载，如参考 [STD-MAE](https://github.com/Jimmy-7664/STD-MAE) 的 `raw_data/`)
+- > `raw/` 原始数据 (自行下载，如参考 [STD-MAE](https://github.com/Jimmy-7664/STD-MAE) 的 `raw_data/`，目前无使用)
   >
 - `processed/` 参考 [BasicTS](https://github.com/GestaltCogTeam/BasicTS) datasets，形成如 `processed/PEMS03` 的目录结构。
 
