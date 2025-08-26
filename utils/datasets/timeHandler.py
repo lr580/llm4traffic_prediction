@@ -16,7 +16,7 @@ class TimeCalc():
         
 class PEMSTimeCalc(TimeCalc):
     def __init__(self, x):
-        granularity = datetime.timedelta(minutes=5)
+        granularity = datetime.timedelta(minutes=5) # see BasicTS datasets desc.json field "frequency (minutes)"
         # start time sees any survey (e.g. paper https://arxiv.org/pdf/2101.11174 )
         if x == 3:
             startTime = datetime.datetime(2018, 9, 1, 0, 0, 0)

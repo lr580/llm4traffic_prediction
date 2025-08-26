@@ -28,13 +28,13 @@ class Dataset():
     def get_test(self):
         return self.data[self.val_end:,:,:]
     
-    def get_time_of_day(self, i:int, j:int):
-        '''可以用 timeCalc 计算的，懒得算了'''
-        return self.data[i,j,1] 
-    
-    def get_day_of_week(self, i:int, j:int):
-        '''可以用 timeCalc 计算的，懒得算了'''
-        return self.data[i,j,2] 
+    # Not used
+    # def get_time_of_day(self, i:int, j:int):
+    #     '''可以用 timeCalc 计算的，懒得算了, BasicTS only'''
+    #     return self.data[i,j,1] 
+    # def get_day_of_week(self, i:int, j:int):
+    #     '''可以用 timeCalc 计算的，懒得算了, BasicTS only'''
+    #     return self.data[i,j,2] 
     
     def get_data(self, i:int, j:int, copy=False):
         '''只取数据，不取time of day, day of week；返回长为T的俩一维向量'''

@@ -8,14 +8,16 @@
 
 包依赖参见 `requirements.txt`。
 
-数据集 `data/` 
+数据集 `data/`
 
 - > `raw/` 原始数据 (自行下载，如参考 [STD-MAE](https://github.com/Jimmy-7664/STD-MAE) 的 `raw_data/`)
+  >
 - `processed/` 参考 [BasicTS](https://github.com/GestaltCogTeam/BasicTS) datasets，形成如 `processed/PEMS03` 的目录结构。
 
 数据处理等 `utils/`
 
 - `datasets/` 数据集操作
+
   - `graphHandler.py` 图读取和基本操作
   - `timeHandler.py` 计算数据集的时间
   - `statHandler.py` 计算数据集统计量
@@ -23,13 +25,17 @@
   - `handler.py` 上面内容的捆绑包
   - `data.py` 输入、输出、真实值、评估结果集成及其存取
 - `metrics/` 评价指标实现参考 [BasicTS](https://github.com/GestaltCogTeam/BasicTS)
+
   - `evaluation.py` 进行准确率评估
   - `plot.py` 绘图可视化对比结果
 - `common/` 基础通用代码
+
   - `log.py` 输出和日志
 - `baselines/` 基准模型
-  - `HA.py`，历史平均值，不同节点、不同时间片、星期的三维度的平均值用作预测
 
+  - `HA.py`，历史平均值，不同节点、不同时间片、星期的三维度的平均值用作预测
+  - `baselineResults.py` 对基准模型结果进行展示对比等
+  - `baselineResults.csv` 部分经典基准模型结果
 
 提示词工程实验：`prompt/`
 
@@ -37,7 +43,7 @@
 - `prompt.py` 不同的提示词方案
 - `model.py` 主体类，执行实验
 
-单元测试、调试代码等：`unittest/` 
+单元测试、调试代码等：`unittest/`
 
 ## 提示词工程
 
@@ -98,8 +104,6 @@
 
 > 可以还有一个版本，对邻节点不输入 HA，只输入常规流量。
 
-
-
 > 其他思路：
 >
 > - [xTP-LLM](https://github.com/Guoxs/xTP-LLM) 使用天气、区域特征、节假日等，需要数据支持。
@@ -156,13 +160,9 @@ HA        23.087145  0.234999  35.094261
 HA_Nei    17.983538  0.189089  26.264658
 ```
 
+PEMS-BAY, METR-LA 数据量数量级类似，不再尝试。BasicTS 里也没有显著特别小很多的其他合适数据集了。
+
 ## 可行性分析
-
-### 推理速度计算
-
-参考：[src](https://laptopreview.club/how-to-calculate-the-inference-speed-of-llm-token-per-second/) [src2](https://blog.csdn.net/lxw1844912514/article/details/148911441) [src3](https://www.zhihu.com/question/596311688) [src4](https://zhuanlan.zhihu.com/p/630860436)
-
-![image-20250815193145741](img/image-20250815193145741.png)
 
 ### API 调用
 
@@ -170,7 +170,7 @@ HA_Nei    17.983538  0.189089  26.264658
 
 在 145 次询问中，使用了 10304 + 49826 tokens 输入，10440 tokens 输出。根据定价，算得 0.09-0.18 元(是否低峰期不同)。平均估计单价按 0.001 算。
 
-则 PEMS03 的测试集为 5241x358；PEMS04 的 3398x307；PEMS07 的 5644x883；PEMS08 的 3571x170。按 7 秒一个算，分别需要 152 天，84 天，403 天，49 天。
+则 PEMS03 的测试集为 5241x358；PEMS04 的 3398x307；PEMS07 的 5644x883；PEMS08 的 3571x170。即1e6数量级。按 7 秒一个算，分别需要 152 天，84 天，403 天，49 天。
 
 使用深度思考 Deepseek-reasoner，调用一次 API 耗费 7-15 分钟。如果算 7 分钟，就是 60 倍，也就是 152天->24年。
 
