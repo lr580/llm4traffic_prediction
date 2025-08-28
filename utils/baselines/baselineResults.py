@@ -46,7 +46,6 @@ class Result:
         if len(need) == 1 and not need[0]:
             return True
         ownedTags = self.tags.split(',')
-        # print(self.model, need, ownedTags)
         return all([tag in ownedTags for tag in need])
     
     def dataset_satisfy(self, datasets: list):
@@ -65,9 +64,6 @@ class Result:
 class Results:
     results: List[Result]
     '''结果'''
-    
-    # df: pd.DataFrame = None
-    '''结果对应的 DataFrame，为计算方便设计'''
     
     def __iter__(self):
         return iter(self.results)
@@ -88,8 +84,6 @@ class Results:
     @staticmethod
     def from_dataframe(df: pd.DataFrame) -> List[Result]:
         # 可以设计为动态的，让 Result 的字段可以动态变化而不必修改该函数，略。
-        # print(df)
-        # df['split'] = df['split'].astype(str)
         results = []
         for _, row in df.iterrows():
             eval_data = {
@@ -144,7 +138,6 @@ class Results:
         results = []
         for result in self.results:
             ok = True
-            # print(result.dataset_satisfy(datasets), result.split == split, result.tags_satisfy(tags), result.input_satisfy(inLen), result.output_satisfy(outLen), result.modell_name_satisfy(models))
             if not(result.dataset_satisfy(datasets) and result.split == split and result.tags_satisfy(tags)):
                 ok = False
             if not(result.input_satisfy(inLen) and result.output_satisfy(outLen)):
@@ -163,17 +156,3 @@ class Results:
         '''注意返回 DataFrame'''
         return self.to_dataframe().sort_values(by=key)
     
-    # @staticmethod
-    # def append_to_csv(results: List[Result], filepath: str, **kwargs):
-    #     try:
-    #         existing_df = pd.read_csv(filepath)
-    #         new_df = Results.to_dataframe(results)
-    #         combined_df = pd.concat([existing_df, new_df], ignore_index=True)
-    #         combined_df.to_csv(filepath, index=False, **kwargs)
-    #     except FileNotFoundError:
-    #         Results.write_to_csv(results, filepath, **kwargs)
-    
-# BASELINE_RESULTS = Results.read_from_csv('.Results.csv')
-
-
-# def 
