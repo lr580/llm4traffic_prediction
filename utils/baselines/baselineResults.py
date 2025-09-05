@@ -152,7 +152,14 @@ class Results:
         else:
             return Results(results=results)
         
-    def sort(self, key='mape'):
+    def sort(self, key='mape') -> pd.DataFrame:
         '''注意返回 DataFrame'''
         return self.to_dataframe().sort_values(by=key)
     
+    def rank(self, key='mape') -> pd.DataFrame:
+        df = self.to_dataframe()
+        best_rmse = df.groupby(['model', 'dataset'])[key].min().reset_index()
+        pivot_df = best_rmse.pivot(index='model', columns='dataset', values=key)
+        pivot_df[f'Avg {key}'] = pivot_df.mean(axis=1, skipna=True)
+        ranked_df = pivot_df.sort_values(by=f'Avg {key}', ascending=True)      
+        return ranked_df
