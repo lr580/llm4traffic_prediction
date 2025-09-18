@@ -6,4 +6,3 @@ img/
 *.zip
 !requirements.txt
 report.md
-BasicTS/

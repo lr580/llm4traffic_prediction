@@ -58,4 +58,3 @@ class PEMS_HAstat(HAstat):
             r = int(dataset.t * train_ratio)
         data = fulldata[l:r, :, :]
         super().__init__(data, metric)
-        

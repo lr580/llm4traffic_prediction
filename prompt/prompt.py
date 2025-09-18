@@ -1,4 +1,4 @@
-from utils.datasets import DatasetHanlder, SingleInput
+from utils.datasets import DatasetHanlder, SingleInput, TrendCalc
 from utils.common import date2str, vec2str
 
 class Prompt():
@@ -84,7 +84,8 @@ class PromptHA(Prompt):
     
 class PromptNeighbor(Prompt):
     '''单点数据 + 邻点数据'''
-    def __init__(self):
+    def __init__(self, lang='en'):
+        super().__init__(lang)
         self.name = 'neighbor'
         
     def sayNeighbors(self, handler:DatasetHanlder, data: SingleInput):
@@ -115,7 +116,8 @@ class PromptNeighbor(Prompt):
     
 class PromptHANeighbor(PromptHA, PromptNeighbor):
     '''单点数据 + 邻点数据 + 历史平均流量'''
-    def __init__(self, neiHA=True):
+    def __init__(self, lang='en', neiHA=True):
+        super().__init__(lang)
         self.name = 'HA_neighbor'
         self.neiHA = neiHA
         
@@ -135,6 +137,55 @@ class PromptHANeighbor(PromptHA, PromptNeighbor):
         prompt += self.sayLocation(data)
         prompt += self.sayInputTimeRange(handler, data)
         prompt += vec2str(data.X) + '\n'
+        prompt += self.sayInputHA(handler, data) + '\n'
+        prompt += self.sayNeighbors(handler, data)
+        prompt += self.sayNeighborFlowsWithHA(handler, data) if self.neiHA else self.sayNeighborFlows(handler, data)
+        prompt += self.sayOutputTimeRange(handler, data)
+        prompt += self.sayTargetLocation(data)
+        prompt += self.sayOutputHA(handler, data) + '\n'
+        prompt += self.SINGLE_OUTPUT_FORMAT_DESC
+        return prompt
+    
+class PromptTimeLLM(Prompt):
+    ''' 采用了论文 Time-LLM 的统计量的基本提示词 '''
+    def __init__(self, lang='en'):
+        super().__init__(lang)
+        self.name = 'timellm'
+
+    def sayStat(self, data: SingleInput) -> str:
+        minx, maxx, medx, lags, diffsum = TrendCalc.trendStat(data.X)
+        prompt = '输入流量的统计量如下：' 
+        prompt += f'最小值：{minx:.2f}，最大值：{maxx:.2f}，中位数：{medx:.2f}，'
+        trend = '上升' if diffsum > 0 else '下降'
+        prompt += f'整体呈{trend}趋势，'
+        prompt += f'前{len(lags)}个滞后项为{vec2str(lags)}。'
+        return prompt
+
+    def generate(self, handler:DatasetHanlder, data:SingleInput) -> str:
+        prompt = self.TASK_DESC
+        prompt += self.saySpace(handler)
+        prompt += self.INPUT_DESC + '\n'
+        prompt += self.sayInputTimeRange(handler, data)
+        prompt += vec2str(data.X) + '\n'
+        prompt += self.sayStat(data) + '\n'
+        prompt += self.sayOutputTimeRange(handler, data)
+        prompt += self.SINGLE_OUTPUT_FORMAT_DESC
+        return prompt
+    
+class PromptTimeLLMWithHANei(PromptTimeLLM, PromptHANeighbor):
+    ''' 采用了论文 Time-LLM 的统计量的基本提示词 + 邻点数据 '''
+    def __init__(self, lang='en'):
+        super().__init__(lang)
+        self.name = 'timellm_hanei'
+
+    def generate(self, handler:DatasetHanlder, data: SingleInput) -> str:
+        prompt = self.TASK_DESC
+        prompt += self.saySpace(handler)
+        prompt += self.INPUT_DESC + '\n'
+        prompt += self.sayLocation(data)
+        prompt += self.sayInputTimeRange(handler, data)
+        prompt += vec2str(data.X) + '\n'
+        prompt += self.sayStat(data) + '\n'
         prompt += self.sayInputHA(handler, data) + '\n'
         prompt += self.sayNeighbors(handler, data)
         prompt += self.sayNeighborFlowsWithHA(handler, data) if self.neiHA else self.sayNeighborFlows(handler, data)

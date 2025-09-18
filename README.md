@@ -22,7 +22,8 @@
 
   - `graphHandler.py` 图读取和基本操作
   - `timeHandler.py` 计算数据集的时间
-  - `statHandler.py` 计算数据集统计量
+  - `statHandler.py` 基于数据集计算数据集统计量(如历史平均)
+  - `calcHandler.py` 基于数据计算数据集统计量(如均值、自相关)
   - `dataset.py` 数据集读取和划分
   - `handler.py` 上面内容的捆绑包
   - `data.py` 输入、输出、真实值、评估结果集成及其存取
