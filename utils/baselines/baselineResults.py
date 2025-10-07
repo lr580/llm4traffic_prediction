@@ -1,4 +1,5 @@
-'''整理汇总基准模型的实验结果；数据在同目录同名baselineResults.csv下，目前只收录了部分结果，大部分是新论文的'''
+'''整理汇总基准模型的实验结果；数据在同目录同名baselineResults.csv下，目前只收录了部分结果，大部分是新论文的；
+用法参见 unittest/baselineResults_test.py 和 baselineResults_test2.py'''
 from __future__ import annotations
 from dataclasses import dataclass, asdict
 from ..datasets.data import EvaluateResult

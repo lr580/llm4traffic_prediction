@@ -93,6 +93,7 @@ class PEMSDatasetHandler(DatasetHanlder):
         elif self.x == 8:
             s += '圣贝纳迪诺区(San Bernardino Area)'
         return s
+        # 此外，点数分别是 [358, 307, 883, 170] 在数据集可以验证。
         
     def load_name(self):
         return f'PEMS0{self.x}'
