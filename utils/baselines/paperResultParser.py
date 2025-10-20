@@ -57,18 +57,10 @@ class ParserD2STGNN:
     '''文章 Table 3 文本格式 '''
 
 if __name__ == "__main__":
-    # 数据集名称映射
-    dataset_names = ['PEMS04', 'PEMS08', 'PEMS_BAY', 'METR_LA']
-    
-    # 对RAW_HORIZONS列表中的每个数据集执行解析
+    dataset_names = ['PEMS04', 'PEMS08', 'PEMS-BAY', 'METR-LA']
     for i, raw_horizon in enumerate(ParserD2STGNN.RAW_HORIZONS):
         dataset_name = dataset_names[i]
-        print(f"\n正在处理数据集: {dataset_name}")
-        
         csv_output = ParserD2STGNN.parse_D2STGNN_horizon(raw_horizon, dataset_name)
-        print(csv_output)
-        
-        # 保存到文件
         output_filename = f'd:\\_lr580_desktop\\research\\llm_tfp\\utils\\baselines\\horizons_D2STGNN_{dataset_name}.csv'
         with open(output_filename, 'w', newline='', encoding='utf-8') as f:
             f.write(csv_output)

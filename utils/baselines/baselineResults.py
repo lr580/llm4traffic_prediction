@@ -161,9 +161,7 @@ class Results:
                 ok = False
             if not(result.input_satisfy(inLen) and result.output_satisfy(outLen)):
                 ok = False
-            if not result.modell_name_satisfy(models):
-                ok = False
-            if not result.horizon_satisfy(horizons):
+            if not (result.modell_name_satisfy(models) and result.horizon_satisfy(horizons)):
                 ok = False
             if ok:
                 results.append(result)
@@ -185,151 +183,22 @@ class Results:
         ranked_df = pivot_df.sort_values(by=f'Avg {key}', ascending=True)      
         return ranked_df
     
-    def horizon_view2(self, horizons: list = [3, 6, 12]) -> pd.DataFrame:
-        df = self.to_dataframe()
-        df = df[df['horizon'].isin(horizons)]
-        
-        # 使用pivot_table重塑数据
-        result = df.pivot_table(
-            index='model',          # 行索引为模型名称
-            columns='horizon',      # 列索引为horizon值
-            values=['mae', 'mape', 'rmse']  # 需要展示的指标
-        )
-        
-        # 手动重建列索引
-        new_columns = []
-        for horizon in horizons:
-            for metric in ['mae', 'mape', 'rmse']:
-                new_columns.append((horizon, metric))
-        
-        # 创建新的多级列索引
-        result.columns = pd.MultiIndex.from_tuples(new_columns)
-        
-        # 设置列索引层级名称
-        result.columns.names = ['horizon', 'metric']
-        
-        return result
-    
     def horizon_view(self, horizons: list = [3, 6, 12]) -> pd.DataFrame:
+        """根据给定的 horizons 参数生成多级表头的 DataFrame。
+        索引是 model，第一级列是不同 horizons 如 horizon 3，第二级列为各个 horizon 的 mae、mape、rmse 指标。"""
         df = self.to_dataframe()
         df = df[df['horizon'].isin(horizons)]
-        
-        # 使用melt将数据变长
         melted = df.melt(
             id_vars=['model', 'horizon'],
             value_vars=['mae', 'mape', 'rmse'],
             var_name='metric',
             value_name='value'
         )
-        
-        # 使用pivot将数据变宽
         result = melted.pivot_table(
             index='model',
             columns=['horizon', 'metric'],
-            values='value'
+            values='value' # 默认 np.mean
         )
-        
-        # 设置列索引层级名称
         result.columns.names = ['horizon', 'metric']
-        
-        # 按指定的horizons顺序排序列
         return result.reindex(columns=horizons, level=0)
     
-    def horizon_view0(self, horizons: list = [3, 6, 12]) -> pd.DataFrame:
-        """根据给定的 horizons 参数生成多级表头的 DataFrame。
-        索引是 model，第一级列是不同 horizons 如 horizon 3，第二级列为各个 horizon 的 mae、mape、rmse 指标。"""
-        df = self.to_dataframe()
-        df = df[df['horizon'].isin(horizons)]
-        df.set_index(['model', 'horizon'], inplace=True)
-        metrics_df = df[['mae', 'mape', 'rmse']]
-        result_df = metrics_df.unstack(level='horizon')
-        # result_df.columns = [f"horizon {h} {metric}" for metric, h in result_df.columns]
-        return result_df
-    
-        df = self.to_dataframe()
-        df = df[df['horizon'].isin(horizons)]
-        result = df.set_index(['model', 'horizon'])[['mae','mape','rmse']].unstack('horizon')
-        result.columns = result.columns.swaplevel()
-        result = result.sort_index(axis=1, level=0)
-        return result.reindex(columns=horizons, level=1)
-        
-    
-        df = self.to_dataframe()
-        df = df[df['horizon'].isin(horizons)]
-        
-        # 使用pivot_table重塑数据，创建多级列索引
-        result = df.pivot_table(
-            index='model',          # 行索引为模型名称
-            columns='horizon',      # 列索引为horizon值
-            values=['mae', 'mape', 'rmse']  # 需要展示的指标
-        )
-        
-        # 交换列索引层级，使指标成为第一级，horizon成为第二级
-        result = result.swaplevel(axis=1)
-        
-        # 按指标名称排序列索引
-        result = result.sort_index(axis=1, level=0)
-        
-        # 按指定的horizons顺序排列第二级列
-        return result.reindex(columns=horizons, level=1)
-    
-        df = self.to_dataframe()
-        df = df[df['horizon'].isin(horizons)]
-        
-        # 使用pivot_table重塑数据，创建多级列索引
-        result = df.pivot_table(
-            index='model',          # 行索引为模型名称
-            columns='horizon',      # 列索引为horizon值
-            values=['mae', 'mape', 'rmse']  # 需要展示的指标
-        )
-        
-        # 重命名列索引层级（可选，使输出更清晰）
-        result.columns.names = ['metric', 'horizon']
-        
-        # 按指定的horizons顺序排序列
-        return result.reindex(columns=horizons, level='horizon')
-    
-        
-        # 下面是 CodeBuddy 默认模型 vscode 插件喂得一坨
-    # def horizon_view(self, horizons: list = [3, 6, 12]) -> pd.DataFrame:
-        """
-        根据给定的 horizons 参数生成多级表头的 DataFrame。
-        第一级表头为模型名和不同 horizons，第二级表头为 mae、mape、rmse 指标。
-        """
-        filtered_results = [result for result in self.results if result.horizon in horizons]
-
-        data = defaultdict(dict)
-        for result in filtered_results:
-            data[result.model][f"horizon {result.horizon}"] = {
-                "mae": result.evaluateResult.mae,
-                "mape": result.evaluateResult.mape,
-                "rmse": result.evaluateResult.rmse
-            }
-        print(data)
-        
-        # 构建多级表头的 DataFrame
-        columns = pd.MultiIndex.from_tuples(
-            [(model, f"horizon {h}", metric)
-             for model in data.keys()
-             for h in horizons
-             for metric in ["mae", "mape", "rmse"]
-             if f"horizon {h}" in data[model]], 
-            names=["Model", "Horizon", "Metric"]
-        )
-        
-        # 填充数据
-        rows = []
-        for model in data.keys():
-            row = []
-            for h in horizons:
-                if f"horizon{h}" in data[model]:
-                    row.extend([
-                        data[model][f"horizon {h}"]["mae"],
-                        data[model][f"horizon {h}"]["mape"],
-                        data[model][f"horizon {h}"]["rmse"]
-                    ])
-                else:
-                    row.extend([None, None, None])
-            rows.append(row)
-        
-        return pd.DataFrame(rows, index=data.keys(), columns=columns)

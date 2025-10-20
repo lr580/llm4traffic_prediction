@@ -38,8 +38,9 @@
 - `baselines/` 基准模型
 
   - `HA.py`，历史平均值，不同节点、不同时间片、星期的三维度的平均值用作预测
-  - `baselineResults.py` 对基准模型结果进行展示对比等
+  - `baselineResults.py` 对基准模型结果进行多角度展示对比等
   - `baselineResults.csv` 部分经典基准模型结果
+  - `paperResultParser.py` 辅助中间函数，解析论文原始表格结果数据
 
 提示词工程实验：`prompt/`
 
