@@ -71,49 +71,6 @@ def pdDataFrame2str(df: DataFrame, prefix: str = "& ", separator: str = " & ", s
         formatted_rows.append(pdRow2str(row, prefix, separator, suffix, include_index, cell_decorator))
     return line_separator.join(formatted_rows)
 
-def wrap_added_for_table(s: str) -> str:
-    """对LaTeX表格内容进行处理：对每个单元格，如果没有被added{}包裹，则添加added{}"""
-    rows = s.split(r' \\ ')
-    processed_rows = []
-    
-    for row in rows:
-        cells = row.split('&')
-        processed_cells = []
-        
-        for cell in cells:
-            cell = cell.strip()
-            # 检查单元格是否已被\added{}包裹
-            if not (cell.startswith(r'\added{') and cell.endswith('}')):
-                processed_cells.append(latex_add_decorator(cell))
-            else:
-                processed_cells.append(cell)
-                
-        processed_rows.append(' & '.join(processed_cells))
-    
-    return r' \\ '.join(processed_rows)
-
-def unwrap_added_for_table(s: str) -> str:
-    """ 移除单元格的added{}包裹"""
-    rows = s.split(r' \\ ')
-    processed_rows = []
-    
-    for row in rows:
-        cells = row.split('&')
-        processed_cells = []
-        
-        for cell in cells:
-            cell = cell.strip()
-            # 移除\added{}包裹（如果存在）
-            if cell.startswith(r'\added{') and cell.endswith('}'):
-                # 提取\added{}内的内容（移除首尾标记）
-                processed_cells.append(cell[7:-1])
-            else:
-                processed_cells.append(cell)
-                
-        processed_rows.append(' & '.join(processed_cells))
-    
-    return r' \\ '.join(processed_rows)
-
 if __name__ == '__main__':
     import torch
     a,b,c = prints_and_returns(mae=1., mape=2/3, rmse=torch.tensor(3.))

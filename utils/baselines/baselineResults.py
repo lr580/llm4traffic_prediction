@@ -183,22 +183,65 @@ class Results:
         ranked_df = pivot_df.sort_values(by=f'Avg {key}', ascending=True)      
         return ranked_df
     
-    def horizon_view(self, horizons: list = [3, 6, 12]) -> pd.DataFrame:
-        """根据给定的 horizons 参数生成多级表头的 DataFrame。
-        索引是 model，第一级列是不同 horizons 如 horizon 3，第二级列为各个 horizon 的 mae、mape、rmse 指标。"""
+    def multi_index_view(self, group_by: str, groups: list = None, metrics: list = None) -> pd.DataFrame:
+        """ 通用的多级索引视图函数
+        
+        Args:
+            group_by: 分组字段，如 'dataset', 'horizon'
+            groups: 指定的分组值列表，如果为None则使用所有存在的值
+            metrics: 指定的指标列表，如果为None则使用 ['mae', 'mape', 'rmse']
+            
+        Returns:
+            pd.DataFrame: 多级列索引的DataFrame"""
         df = self.to_dataframe()
-        df = df[df['horizon'].isin(horizons)]
+        if metrics is None:
+            metrics = ['mae', 'mape', 'rmse']
+        if groups is not None:
+            df = df[df[group_by].isin(groups)]
         melted = df.melt(
-            id_vars=['model', 'horizon'],
-            value_vars=['mae', 'mape', 'rmse'],
+            id_vars=['model', group_by],
+            value_vars=metrics,
             var_name='metric',
             value_name='value'
         )
         result = melted.pivot_table(
             index='model',
-            columns=['horizon', 'metric'],
-            values='value' # 默认 np.mean
+            columns=[group_by, 'metric'],
+            values='value',
+            aggfunc='mean'
         )
-        result.columns.names = ['horizon', 'metric']
-        return result.reindex(columns=horizons, level=0)
+        result.columns.names = [group_by, 'metric']
+        if groups is not None:
+            available_groups = [g for g in groups if g in result.columns.get_level_values(0)]
+            result = result.reindex(columns=available_groups, level=0)
+        return result
+
+    def horizon_view(self, horizons: list = [3, 6, 12]) -> pd.DataFrame:
+        """根据给定的horizons参数生成多级表头的DataFrame。
+        索引是model，第一级列是不同horizons，第二级列为各个horizon的mae、mape、rmse指标。"""
+        return self.multi_index_view(group_by='horizon', groups=horizons)
+
+    def dataset_view(self, datasets: list = [f'PEMS0{x}' for x in '3478']) -> pd.DataFrame:
+        """根据给定的datasets参数生成多级表头的DataFrame。
+        索引是model，第一级列是不同数据集，第二级列为各个数据集的mae、mape、rmse指标。"""
+        return self.multi_index_view(group_by='dataset', groups=datasets)
+    
+    # def horizon_view(self, horizons: list = [3, 6, 12]) -> pd.DataFrame:
+    #     """根据给定的 horizons 参数生成多级表头的 DataFrame。
+    #     索引是 model，第一级列是不同 horizons 如 horizon 3，第二级列为各个 horizon 的 mae、mape、rmse 指标。"""
+    #     df = self.to_dataframe()
+    #     df = df[df['horizon'].isin(horizons)]
+    #     melted = df.melt(
+    #         id_vars=['model', 'horizon'],
+    #         value_vars=['mae', 'mape', 'rmse'],
+    #         var_name='metric',
+    #         value_name='value'
+    #     )
+    #     result = melted.pivot_table(
+    #         index='model',
+    #         columns=['horizon', 'metric'],
+    #         values='value' # 默认 np.mean
+    #     )
+    #     result.columns.names = ['horizon', 'metric']
+    #     return result.reindex(columns=horizons, level=0)
     
