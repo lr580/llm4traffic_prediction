@@ -1,3 +1,3 @@
 from .baselineResults import *
-from .paperResultParser import *
+from .rawResultParser import *
 from .citations import *

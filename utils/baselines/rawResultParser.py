@@ -1,6 +1,41 @@
+from .baselineResults import Result, Results
+from ..datasets.data import EvaluateResult
 import csv
 from io import StringIO
 import re
+
+class ParserBasicTS:
+    ''' 从 BasicTS 格式的 checkpoints 的 .log 里提取结果
+    BasicTS https://github.com/GestaltCogTeam/BasicTS '''
+    @staticmethod
+    def parse_horizon(path: str, dataset: str, model: str, horizons:str=[3,6,12], split="6:2:2", inLen=12, outLen=12, tags="survey", source=''):
+        ''' 取 log 里最后的结果，就是 test horizon '''
+        results = Results()
+        try:
+            with open(path, 'r', encoding='utf-8') as file:
+                content = file.read()
+            
+            pattern = r'Evaluate best model on test data for horizon (\d+), Test MAE: ([\d.]+), Test RMSE: ([\d.]+), Test MAPE: ([\d.]+)'
+            matches = re.findall(pattern, content)
+            
+            horizon_matches = {}
+            for match in matches:
+                horizon = int(match[0])
+                if horizon in horizons:
+                    horizon_matches[horizon] = EvaluateResult(round(float(match[1]), 2), round(float(match[3]) * 100, 2), round(float(match[2]), 2))
+            for horizon in horizons:
+                if horizon in horizon_matches:
+                    result = Result(model, dataset, horizon_matches[horizon], split, inLen, outLen, horizon, source, tags)
+                    results.append(result)
+                else:
+                    results[horizon] = None  
+        except FileNotFoundError:
+            print(f"文件 {path} 不存在")
+        except Exception as e:
+            print(f"读取文件时出错: {e}")
+        # print(results.to_dataframe().to_csv(None, index=False, header=False))
+        return results
+
 
 class ParserD2STGNN:
     ''' Decoupled Dynamic Spatial-Temporal Graph Neural Network for Traffic Forecasting 

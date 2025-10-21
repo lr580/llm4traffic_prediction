@@ -1,11 +1,10 @@
 '''整理汇总基准模型的实验结果；数据在同目录同名baselineResults.csv下，目前只收录了部分结果，大部分是新论文的；
 用法参见 unittest/baselineResults_test.py 和 baselineResults_test2.py'''
 from __future__ import annotations
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, asdict, field
 from ..datasets.data import EvaluateResult
 from typing import List
 import pandas as pd
-from collections import defaultdict
 from pathlib import Path
 
 @dataclass
@@ -71,7 +70,7 @@ class Result:
     
 @dataclass
 class Results:
-    results: List[Result]
+    results: List[Result] = field(default_factory=list)
     '''结果'''
     
     def __iter__(self):
@@ -79,6 +78,9 @@ class Results:
     
     def __len__(self):
         return len(self.results)
+    
+    def append(self, result: Result):
+        self.results.append(result)
 
     def to_dataframe(self, **kwargs) -> pd.DataFrame:
         data = []
@@ -88,7 +90,9 @@ class Results:
             row_data.update(eval_data)
             del row_data['evaluateResult']
             data.append(row_data)
-        return pd.DataFrame(data, **kwargs)
+        return pd.DataFrame(data, columns=Results.ORDERS, **kwargs)
+    
+    ORDERS = ['model', 'dataset', 'mae', 'mape', 'rmse', 'split', 'inLen', 'outLen', 'tags', 'horizon', 'source']
     
     @staticmethod
     def from_dataframe(df: pd.DataFrame) -> List[Result]:
@@ -225,23 +229,4 @@ class Results:
         """根据给定的datasets参数生成多级表头的DataFrame。
         索引是model，第一级列是不同数据集，第二级列为各个数据集的mae、mape、rmse指标。"""
         return self.multi_index_view(group_by='dataset', groups=datasets)
-    
-    # def horizon_view(self, horizons: list = [3, 6, 12]) -> pd.DataFrame:
-    #     """根据给定的 horizons 参数生成多级表头的 DataFrame。
-    #     索引是 model，第一级列是不同 horizons 如 horizon 3，第二级列为各个 horizon 的 mae、mape、rmse 指标。"""
-    #     df = self.to_dataframe()
-    #     df = df[df['horizon'].isin(horizons)]
-    #     melted = df.melt(
-    #         id_vars=['model', 'horizon'],
-    #         value_vars=['mae', 'mape', 'rmse'],
-    #         var_name='metric',
-    #         value_name='value'
-    #     )
-    #     result = melted.pivot_table(
-    #         index='model',
-    #         columns=['horizon', 'metric'],
-    #         values='value' # 默认 np.mean
-    #     )
-    #     result.columns.names = ['horizon', 'metric']
-    #     return result.reindex(columns=horizons, level=0)
     
