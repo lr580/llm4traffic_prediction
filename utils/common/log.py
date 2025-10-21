@@ -3,7 +3,7 @@ import datetime
 import string
 import random
 import numpy as np
-from typing import cast, Optional
+from typing import cast, Optional, Callable
 from pandas import Series, DataFrame
 def prints_and_returns(verbose=True, **kwargs):
     if verbose:
@@ -41,16 +41,23 @@ def now2str(format='file'):
 ASCII_BIN = string.ascii_letters + string.digits
 def randomStr(n:int):
     return ''.join(random.choices(ASCII_BIN, k=n))
+
+def non_decorate(s:str):
+    return s
+
+def latex_add_decorator(s: str):
+    return f"\\added{{{s}}}"
     
-def pdRow2str(row: Series, prefix: str = "& ", separator: str = " & ", suffix: str = r" \\ \hline", include_index: bool = False) -> str:
+def pdRow2str(row: Series, prefix: str = "& ", separator: str = " & ", suffix: str = r" \\ \hline", include_index: bool = False, cell_decorator: Callable[[str], str] = non_decorate) -> str:
     """格式化pandas Series (row)为自定义字符串"""
     values = row.astype(str).tolist()
+    values = list(map(cell_decorator, values))
     if include_index:
-        values.insert(0, str(row.name))
+        values.insert(0, cell_decorator(str(row.name)))
     joined_values = separator.join(values)
     return f"{prefix}{joined_values}{suffix}"
 
-def pdDataFrame2str(df: DataFrame, prefix: str = "& ", separator: str = " & ", suffix: str = r" \\ \hline", line_separator: str = "\n", include_index: bool = True, include_header: bool = False, header_prefix: Optional[str] = None, header_separator: Optional[str] = None, header_suffix: Optional[str] = None, index_header: str = "Index") -> str:
+def pdDataFrame2str(df: DataFrame, prefix: str = "& ", separator: str = " & ", suffix: str = r" \\ \hline", line_separator: str = "\n", include_index: bool = True, include_header: bool = False, header_prefix: Optional[str] = None, header_separator: Optional[str] = None, header_suffix: Optional[str] = None, index_header: str = "Index", cell_decorator: Callable[[str], str] = non_decorate) -> str:
     """格式化整个DataFrame的每一行数据 返回包含所有格式化行的字符串"""
     formatted_rows = []
     if include_header:
@@ -61,8 +68,51 @@ def pdDataFrame2str(df: DataFrame, prefix: str = "& ", separator: str = " & ", s
         formatted_rows.append(f"{header_prefix}{header_str}{header_suffix}")
     for i in range(len(df)):
         row = df.iloc[i]
-        formatted_rows.append(pdRow2str(row, prefix, separator, suffix, include_index))
+        formatted_rows.append(pdRow2str(row, prefix, separator, suffix, include_index, cell_decorator))
     return line_separator.join(formatted_rows)
+
+def wrap_added_for_table(s: str) -> str:
+    """对LaTeX表格内容进行处理：对每个单元格，如果没有被added{}包裹，则添加added{}"""
+    rows = s.split(r' \\ ')
+    processed_rows = []
+    
+    for row in rows:
+        cells = row.split('&')
+        processed_cells = []
+        
+        for cell in cells:
+            cell = cell.strip()
+            # 检查单元格是否已被\added{}包裹
+            if not (cell.startswith(r'\added{') and cell.endswith('}')):
+                processed_cells.append(latex_add_decorator(cell))
+            else:
+                processed_cells.append(cell)
+                
+        processed_rows.append(' & '.join(processed_cells))
+    
+    return r' \\ '.join(processed_rows)
+
+def unwrap_added_for_table(s: str) -> str:
+    """ 移除单元格的added{}包裹"""
+    rows = s.split(r' \\ ')
+    processed_rows = []
+    
+    for row in rows:
+        cells = row.split('&')
+        processed_cells = []
+        
+        for cell in cells:
+            cell = cell.strip()
+            # 移除\added{}包裹（如果存在）
+            if cell.startswith(r'\added{') and cell.endswith('}'):
+                # 提取\added{}内的内容（移除首尾标记）
+                processed_cells.append(cell[7:-1])
+            else:
+                processed_cells.append(cell)
+                
+        processed_rows.append(' & '.join(processed_cells))
+    
+    return r' \\ '.join(processed_rows)
 
 if __name__ == '__main__':
     import torch
