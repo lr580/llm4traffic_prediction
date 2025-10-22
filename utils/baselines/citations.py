@@ -52,10 +52,10 @@ class CitationHandler:
         return f"{cite} ({model})"
 
     @staticmethod
-    def render(results: Results, formatter: Callable[[str, str], str] = latexFormatter, defaultCite:str=''):
+    def render(results: Results, formatter: Callable[[str, str], str] = latexFormatter, defaultCite:str='', externalCite: dict = {}):
         ''' 就地修改一个 Results 对象，把每个模型名替换成模型名+引用名，替换格式为 formatter'''
         CitationHandler.init()
-        map = CitationHandler.citation_data
+        map = CitationHandler.citation_data | externalCite
         assert map is not None
         for result in results: # result是引用，就地修改
             model = result.model

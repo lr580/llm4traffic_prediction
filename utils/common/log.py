@@ -42,13 +42,16 @@ ASCII_BIN = string.ascii_letters + string.digits
 def randomStr(n:int):
     return ''.join(random.choices(ASCII_BIN, k=n))
 
-def non_decorate(s:str):
+def non_decorator(s:str):
     return s
 
-def latex_add_decorator(s: str):
-    return f"\\added{{{s}}}"
+def round_decorator(s:str):
+    try:
+        return f'{float(s):.2f}'
+    except:
+        return s
     
-def pdRow2str(row: Series, prefix: str = "& ", separator: str = " & ", suffix: str = r" \\ \hline", include_index: bool = False, cell_decorator: Callable[[str], str] = non_decorate) -> str:
+def pdRow2str(row: Series, prefix: str = "& ", separator: str = " & ", suffix: str = r" \\ \hline", include_index: bool = False, cell_decorator: Callable[[str], str] = non_decorator) -> str:
     """格式化pandas Series (row)为自定义字符串"""
     values = row.astype(str).tolist()
     values = list(map(cell_decorator, values))
@@ -57,7 +60,7 @@ def pdRow2str(row: Series, prefix: str = "& ", separator: str = " & ", suffix: s
     joined_values = separator.join(values)
     return f"{prefix}{joined_values}{suffix}"
 
-def pdDataFrame2str(df: DataFrame, prefix: str = "& ", separator: str = " & ", suffix: str = r" \\ \hline", line_separator: str = "\n", include_index: bool = True, include_header: bool = False, header_prefix: Optional[str] = None, header_separator: Optional[str] = None, header_suffix: Optional[str] = None, index_header: str = "Index", cell_decorator: Callable[[str], str] = non_decorate) -> str:
+def pdDataFrame2str(df: DataFrame, prefix: str = "& ", separator: str = " & ", suffix: str = r" \\ \hline", line_separator: str = "\n", include_index: bool = True, include_header: bool = False, header_prefix: Optional[str] = None, header_separator: Optional[str] = None, header_suffix: Optional[str] = None, index_header: str = "Index", cell_decorator: Callable[[str], str] = round_decorator) -> str:
     """格式化整个DataFrame的每一行数据 返回包含所有格式化行的字符串"""
     formatted_rows = []
     if include_header:
