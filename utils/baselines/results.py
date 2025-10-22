@@ -62,7 +62,7 @@ class Result:
     def output_satisfy(self, outLen: int):
         return outLen <= 0 or outLen == self.outLen
     
-    def modell_name_satisfy(self, models: list):
+    def model_satisfy(self, models: list):
         return len(models) == 0 or (self.model in models)
     
     def horizon_satisfy(self, horizons: int):
@@ -168,7 +168,7 @@ class Results:
                 ok = False
             if not(result.input_satisfy(inLen) and result.output_satisfy(outLen)):
                 ok = False
-            if not (result.modell_name_satisfy(models) and result.horizon_satisfy(horizons)):
+            if not (result.model_satisfy(models) and result.horizon_satisfy(horizons)):
                 ok = False
             if ok:
                 results.append(result)
