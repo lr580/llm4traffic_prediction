@@ -151,10 +151,13 @@ class Results:
             print()
             
     @staticmethod
-    def merge(*results: Results) -> Results:
+    def merge(*results: Results, remove_duplicates: bool = True) -> Results:
         merged_results = Results(results=[])
         for result in results:
             merged_results.results.extend(result.results)
+        if remove_duplicates:
+            df = merged_results.to_dataframe()
+            merged_results = Results.from_dataframe(df.drop_duplicates())
         return merged_results
     
     def flit(self, datasets=[], split='6:2:2', tags='', inLen=-1, outLen=-1, models=[], inner=True, horizons=[]):

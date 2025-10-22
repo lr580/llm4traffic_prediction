@@ -1,7 +1,7 @@
 import sys, os
 sys.path.append(os.path.abspath(os.path.join(os.getcwd())))
-from utils.baselines import ParserBasicTS, Results, ParserD2STGNN, ParserLargeST
-cases = 'LargeST'
+from utils.baselines import ParserBasicTS, Results, ParserD2STGNN, ParserLargeST, ParserPatchSTG, RawLargeST, RawPatchSTG, RawRAGL
+cases = 'PatchSTG_RAGL'
 if cases == 'STD-MAE':
     # downloaded in STD-MAE https://github.com/Jimmy-7664/STD-MAE
     paths = {
@@ -18,8 +18,20 @@ if cases == 'STD-MAE':
     results.to_csv('results.csv')
 elif cases == 'LargeST':
     results = []
-    for dataset, raw in ParserLargeST.TABLE2.items():
-        results.append( ParserLargeST.parse_table2(raw, dataset) )
+    for dataset, raw in RawLargeST.TABLE2.items():
+        results.append( ParserLargeST.parse(raw, dataset) )
+    results = Results.merge(*results)
+    results.to_csv('results_largest.csv')
+elif cases == 'PatchSTG_RAGL':
+    results = []
+    for dataset, raw in RawPatchSTG.TABLE3.items():
+        results.append( ParserPatchSTG.parse(raw, dataset, tags='survey,2019') )
+    # results = Results.merge(*results)
+    # results.to_csv('results_patchtst.csv')
+
+    # results = []
+    for dataset, raw in RawRAGL.TABLE3.items():
+        results.append( ParserPatchSTG.parse(raw, dataset, tags='survey,2019') )
     results = Results.merge(*results)
     results.to_csv('results_largest.csv')
 elif cases == 'D2STGNN': # 早期史山，已经完成使命懒得改了，规范性不如其他的类

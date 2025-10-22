@@ -1,7 +1,7 @@
 ''' 管理每个模型对应的引用名，方便载入导论文。引用名列表可以根据自己的 .bib 来修改 '''
 import json
 from pathlib import Path
-from .baselineResults import Results
+from .results import Results
 from typing import Callable
 class CitationHandler:
     @staticmethod
