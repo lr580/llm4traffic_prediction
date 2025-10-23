@@ -14,10 +14,7 @@ import re
 from typing import List
 
 def wrap_cells_with_added(table_text: str) -> str:
-    """
-    将 LaTeX 表格的每个单元格（以 & 分隔）包裹为 \added{...}。
-    保留每行原有的缩进、以及行尾的 '\\' 与可选的 '\hline'。
-    """
+    r"""将 LaTeX 表格的每个单元格（以 & 分隔）包裹为 \added{...}。保留每行原有的缩进、以及行尾的 '\\' 与可选的 '\hline'。 """
     lines: List[str] = table_text.splitlines()
     wrapped_lines: List[str] = []
 
@@ -60,9 +57,7 @@ def wrap_cells_with_added(table_text: str) -> str:
     return "\n".join(wrapped_lines)
 
 def unwrap_added(text: str) -> str:
-    """
-    去除文本中所有 \added{...} 包裹（递归、正确处理花括号嵌套）。
-    """
+    r"""去除文本中所有 \added{...} 包裹（递归、正确处理花括号嵌套）。 """
     i = 0
     n = len(text)
     out_chars: List[str] = []

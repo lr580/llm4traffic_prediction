@@ -1,6 +1,6 @@
 import sys, os
 sys.path.append(os.path.abspath(os.path.join(os.getcwd())))
-from utils.baselines import ParserBasicTS, Results, ParserD2STGNN, ParserLargeST, ParserPatchSTG, RawLargeST, RawPatchSTG, RawRAGL
+from utils.baselines import ParserBasicTS, Results, ParserD2STGNN, ParserLargeST, ParserPatchSTG, RawLargeST, RawPatchSTG, RawRAGL, RawRPMixer
 cases = 'PatchSTG_RAGL'
 if cases == 'STD-MAE':
     # downloaded in STD-MAE https://github.com/Jimmy-7664/STD-MAE
@@ -33,7 +33,17 @@ elif cases == 'PatchSTG_RAGL':
     for dataset, raw in RawRAGL.TABLE3.items():
         results.append( ParserPatchSTG.parse(raw, dataset, tags='survey,2019') )
     results = Results.merge(*results)
-    results.to_csv('results_largest.csv')
+
+    includeRPMixer = True
+    if includeRPMixer:
+        results2 = []
+        for dataset, raw in RawRPMixer.TABLE1.items():
+            results2.append( ParserLargeST.parse(raw, dataset, tags='survey,2019') )
+        results2 = Results.merge(*results2)
+        results2.flit(models = ['ASTGCN', 'DCRNN', 'STGCN'], horizons = [3, 6, 12, -1])
+        results = Results.merge(results, results2)
+
+    results.to_csv('results_largest2.csv')
 elif cases == 'D2STGNN': # 早期史山，已经完成使命懒得改了，规范性不如其他的类
     dataset_names = ['PEMS08']
     spj = 'STSGCN 15.45 24.39 10.22% 16.93 26.53 10.84% 19.50 30.43 12.27%'
