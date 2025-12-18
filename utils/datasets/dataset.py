@@ -7,6 +7,7 @@ class Dataset():
     def __init__(self, path:typing.Union[int, str]=''):
         self.desc_json = dict()
         self.data = self.load_data(str(path))
+        ''' shape [T, N, C] '''
         self.train_ratio = 0.6
         self.val_ratio = 0.2
         self.test_ratio = 1 - self.train_ratio - self.val_ratio
@@ -69,6 +70,7 @@ class Dataset():
         return batch_X, batch_y, batch_index
     
 class PEMSDataset(Dataset):
+    ''' Data from BasicTS (v0.x) https://github.com/GestaltCogTeam/BasicTS '''
     def load_data(self, x:int):
         with open(f'data/processed/PEMS0{x}/desc.json', encoding='utf-8') as f:
             desc = json.load(f)

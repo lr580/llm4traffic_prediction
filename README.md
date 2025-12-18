@@ -44,6 +44,7 @@
   - `baselineResults.csv` 部分经典基准模型结果
   - `rawResultParser.py` 辅助中间函数，解析论文原始表格结果数据
   - `rawResults.py` 一些论文文本原始结果
+  - `eda/` 对数据集的一些统计脚本
 
 提示词工程实验：`prompt/`
 
