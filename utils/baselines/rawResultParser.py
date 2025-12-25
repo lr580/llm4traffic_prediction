@@ -161,3 +161,8 @@ class ParserD2STGNN:
                         writer.writerow([model_name, dataset, mae, mape, rmse, split, inLen, outLen, tags, horizon, source])
         
         return output.getvalue()
+    
+class ParserLargeST:
+    ''' LargeST 标准数据，6-2-2 12-12 2019 15 见论文 LargeST: A Benchmark Dataset for Large-Scale Traffic Forecasting '''
+
+    # TODO
