@@ -3,3 +3,5 @@ deepseek_apikey.txt
 *.md
 # deepseek 调试输出
 *.json
+
+api_infos.toml

@@ -1,0 +1,5 @@
+# 把这个文件名修改为 api_info.toml，并填入你的 API KEY
+[deepseek]
+base_url = "https://api.deepseek.com"
+api_key = "sk-547********4d6188b55242e01fe0912"
+model = "deepseek-chat"

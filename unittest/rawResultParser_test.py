@@ -4,7 +4,7 @@ from utils.baselines import ParserBasicTS, Results, ParserD2STGNN, ParserLargeST
 cases = 'PatchSTG_RAGL'
 if cases == 'STD-MAE':
     # downloaded in STD-MAE https://github.com/Jimmy-7664/STD-MAE
-    paths = {
+    paths = { # 官方训练结果数据，任意位置解压，替换为你的位置
         'PEMS03':r'D:\_lr580_desktop\research\STD-MAE\checkpoints\STDMAE_300\PEMS03\training_log_20231123120118.log',
         'PEMS04':r'D:\_lr580_desktop\research\STD-MAE\checkpoints\STDMAE_300\PEMS04\training_log_20231214135934.log',
         'PEMS07':r'D:\_lr580_desktop\research\STD-MAE\checkpoints\STDMAE_300\PEMS07\training_log_20240416070716.log',

@@ -14,7 +14,7 @@
 
 - > `raw/` 原始数据 (自行下载，如参考 [STD-MAE](https://github.com/Jimmy-7664/STD-MAE) 的 `raw_data/`，目前无使用)
   >
-- `processed/` 参考 [BasicTS](https://github.com/GestaltCogTeam/BasicTS) datasets，形成如 `processed/PEMS03` 的目录结构。
+- `processed/` 参考 [BasicTS](https://github.com/GestaltCogTeam/BasicTS) datasets (`all_data.zip `)，形成如 `processed/PEMS03` 的目录结构。
 
 数据处理等 `utils/`
 
@@ -45,7 +45,7 @@
   - `baselineResults.csv` 部分经典基准模型结果
   - `rawResultParser.py` 辅助中间函数，解析论文原始表格结果数据
   - `rawResults.py` 一些论文文本原始结果
-  - `eda/` 对多个数据集的一些统计脚本和观察结论(详见文件夹内 `.md`说明)
+  - `eda/` 对多个数据集的一些统计脚本和观察结论(详见文件夹内 `.md`说明，如 [此处](https://lr580.github.io/llm4traffic_prediction/) 在线可视化查看 LargeST 数据集图结构)
 
 提示词工程实验：`prompt/`
 
@@ -54,6 +54,8 @@
 - `model.py` 主体类，执行实验
 
 单元测试、调试代码等：`unittest/`
+
+- `prompt_test.py` 执行提示词工程小批量数据集实验
 
 ## 提示词工程
 
@@ -192,7 +194,7 @@ PEMS-BAY, METR-LA 数据量数量级类似，不再尝试。BasicTS 里也没有
 
 ### 本地部署
 
-本地部署 Ollama，其他模型，在GTX3909下的推理速度：
+本地部署 Ollama，其他模型，在GTX3090下的推理速度：
 
 - llama3.2:latest, 1-2s (输出格式可能不对, Plain MAPE 27.5%, HA 19.86%，其他结果很差，特别是纯 Neighbor)
 - deepseek-coder-v2:16b 2-7s(根据提示词不同, 会报错，没跑完，输出格式可能不对)

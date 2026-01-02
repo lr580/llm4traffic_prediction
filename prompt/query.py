@@ -2,6 +2,7 @@ from openai import OpenAI
 import os
 import json
 import requests
+import tomllib
 class CacheQuery():
     '''如果没有询问过，就调用API询问，如果询问过，返回询问结果。\n
     无上下文，不使用流。'''
@@ -42,17 +43,21 @@ class CacheQuery():
             data = json.load(f)
         return self.extractCache(data)
     
-with open(r'prompt/deepseek_apikey.txt') as f:
-    deepseek_apikey = f.read().strip()
-    
-class DeepseekQuery(CacheQuery):
-    def __init__(self, path='', apikey='', model='deepseek-chat'):
+class OpenAIQuery(CacheQuery): # 两种初始化构造；用 toml 的 dict name 或用参数构造。
+    def __init__(self, path:str='', apikey:str='', baseurl:str='', model:str='', name:str=''):
+        ''' name 是 prompt/api_infos.toml 里的名字，如 deepseek；如果没有，则用参数的 apikey, baseurl, model '''
         super().__init__(path)
-        if not apikey:
-            self.apikey = deepseek_apikey
-        self.client = OpenAI(api_key=self.apikey, base_url="https://api.deepseek.com")
+        if name:
+            FILEPATH = 'prompt/api_infos.toml'
+            with open(FILEPATH, 'rb') as f:
+                api_infos = tomllib.load(f)
+            if name in api_infos:
+                api_info = api_infos[name]
+                apikey = api_info['api_key']
+                baseurl = api_info['base_url']
+                model = api_info['model']
         self.model = model 
-        """ 'deepseek-chat' or 'deepseek-reasoner' """
+        self.client = OpenAI(api_key=apikey, base_url=baseurl)
 
     def makeQuery(self, filepath:str, message:list)->str:
         response = self.client.chat.completions.create(
@@ -69,6 +74,16 @@ class DeepseekQuery(CacheQuery):
     def extractCache(self, data:dict)->str:
         return data['choices'][0]['message']['content']
 
+with open(r'prompt/deepseek_apikey.txt') as f:
+    deepseek_apikey = f.read().strip()
+    
+class DeepseekQuery(OpenAIQuery):
+    def __init__(self, path='', apikey='', model='deepseek-chat'):
+        """ model = 'deepseek-chat' or 'deepseek-reasoner' """
+        if not apikey:
+            self.apikey = deepseek_apikey
+        super().__init__(path, self.apikey, "https://api.deepseek.com", model)
+        
 class OllamaQuery(CacheQuery):
     def __init__(self, path='', url='http://127.0.0.1:11434/api/chat', model='deepseek-r1:7b'):
         super().__init__(path)
@@ -93,8 +108,13 @@ class OllamaQuery(CacheQuery):
         return data['message']['content']
         
 if __name__ == "__main__":
-    # q = DeepseekQuery('results/testClass')
-    # print(q.query('test001-C', '前端和后端有何区别'))
-    q = OllamaQuery('results/testClass')
+    # q = DeepseekQuery('results/testClass') # 旧接口
+    q = OpenAIQuery('results/testClass', name='deepseek') # 新接口
+    q = OpenAIQuery('results/testClass', name='renice')
+    print(q.query('test001-C3', 'toml和ini的异同'))
+
+
+
+    # q = OllamaQuery('results/testClass')
     # print(q.query('test001-E', '三维前缀和差分的公式是？'))
-    print(q.query('test001-G', '我刚刚询问了什么问题')) # 默认无上下文
+    # print(q.query('test001-G', '我刚刚询问了什么问题')) # 默认无上下文

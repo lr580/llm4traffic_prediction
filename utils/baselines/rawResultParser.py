@@ -4,6 +4,8 @@ import csv
 from io import StringIO
 import re
 
+# usage: unittest/rawResultParser_test.py
+
 class ParserBasicTS:
     ''' 从 BasicTS 格式的 checkpoints 的 .log 里提取结果
     BasicTS https://github.com/GestaltCogTeam/BasicTS '''
@@ -162,7 +164,6 @@ class ParserD2STGNN:
         
         return output.getvalue()
     
-class ParserLargeST:
-    ''' LargeST 标准数据，6-2-2 12-12 2019 15 见论文 LargeST: A Benchmark Dataset for Large-Scale Traffic Forecasting '''
-
-    # TODO
+# class ParserLargeST:
+#     ''' LargeST 标准数据，6-2-2 12-12 2019 15 见论文 LargeST: A Benchmark Dataset for Large-Scale Traffic Forecasting '''
+#     # TODO

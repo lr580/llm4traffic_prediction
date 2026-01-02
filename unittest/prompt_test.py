@@ -1,15 +1,20 @@
-import sys, os, tqdm
+# 标准基于提示词的小批量预测，可以修改配置来选择不同的模型、提示词、数据集等
+# 更多不同设置参见 unittest/abandoned/prompt_*.py
+import sys, os
 sys.path.append(os.path.abspath(os.path.join(os.getcwd())))
-from prompt import LLMmodel, DeepseekQuery, PromptHANeighbor, PromptHA, PromptPlain, PromptNeighbor
+from prompt import LLMmodel, OpenAIQuery, PromptHANeighbor
 from utils.datasets import PEMSDatasetHandler, DataList
-for x in [3,4,7,8]:
-    tinyset = '32-1'
-    datalist = DataList.load(f'data/tiny/PEMS0{x}/{tinyset}.json')
-    prompts = [PromptPlain(), PromptNeighbor(), PromptHA(), PromptHANeighbor()]
-    for prompt in tqdm.tqdm(prompts, 'Models'):
-        handler = PEMSDatasetHandler(x, loadData=True, stat=True)
-        model = LLMmodel(DeepseekQuery(), prompt, handler, tinyset)
-        model.tiny_test(datalist)
-    
-# datalist = DataList.load(f'data/tiny/PEMS04/{tinyset}.json')
-# datalist = DataList.load('data/tiny/PEMS03/16-3.json')
+
+prompt = PromptHANeighbor()
+handler = PEMSDatasetHandler(3, loadData=True, stat=True)
+datalist = DataList.load('data/tiny/PEMS03/32-5.json')
+model_scheme = 'gpt-5.2'
+match model_scheme:
+    case 'gpt-5.2':
+        query = OpenAIQuery(name='renice')
+        runid = '32-5-gpt5-2'
+    case _: # deepseek
+        query = OpenAIQuery(name='deepseek')
+        runid = '32-5a'
+model = LLMmodel(query, prompt, handler, runid)
+model.tiny_test(datalist)

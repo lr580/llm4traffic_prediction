@@ -15,7 +15,7 @@ if cases == 'PEMS0x':
     # print(pdDataFrame2str(df, prefix = '', cell_decorator=round_add_decorator))
 elif cases == 'LargeST':
     results.flit(tags='2019', horizons=[-1])
-    results.flit(models=['DSTAGNN', 'STGODE', 'STWave', 'AGCRN', 'DGCRN', 'D2STGNN', 'GWNet', 'ASTGCN', 'DCRNN', 'STGCN'])
+    # results.flit(models=['DSTAGNN', 'STGODE', 'STWave', 'AGCRN', 'DGCRN', 'D2STGNN', 'GWNet', 'ASTGCN', 'DCRNN', 'STGCN'])
     CitationHandler.render(results)
     df = results.dataset_view(['SD', 'GBA', 'GLA', 'CA']).sort_values(by=('SD', 'mae'), ascending=False)
     print(df)
@@ -24,4 +24,4 @@ elif cases == 'LargeST':
     bold_tex = bold_column_min_in_latex_table(tex)
     bold_tex = bold_tex.replace('nan', '-')
     # tex = wrap_cells_with_added(bold_tex)
-    print(bold_tex)
+    # print(bold_tex)
