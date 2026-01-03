@@ -1,5 +1,5 @@
 from openai import OpenAI
-import os
+import os, random, string
 import json
 import requests
 import tomllib
@@ -18,7 +18,10 @@ class CacheQuery():
         self.path = path
         os.makedirs(self.path, exist_ok=True)
         
-    def query(self, queryID:str, userMessage='', message=[],  systemMessage=''):
+    def query(self, queryID:str='', userMessage='', message=[],  systemMessage=''):
+        if not queryID:
+            characters = string.ascii_letters + string.digits 
+            queryID = ''.join(random.choice(characters) for _ in range(12))
         filepath = os.path.join(self.path, f'{queryID}.json')
         if os.path.exists(filepath):
             content = self.readCache(filepath)
@@ -110,8 +113,8 @@ class OllamaQuery(CacheQuery):
 if __name__ == "__main__":
     # q = DeepseekQuery('results/testClass') # 旧接口
     q = OpenAIQuery('results/testClass', name='deepseek') # 新接口
-    q = OpenAIQuery('results/testClass', name='renice')
-    print(q.query('test001-C3', 'toml和ini的异同'))
+    q = OpenAIQuery('results/testClass', name='renice-gemini')
+    print(q.query(userMessage='讲一下Berlekamp-Massey 算法的作用范围'))
 
 
 

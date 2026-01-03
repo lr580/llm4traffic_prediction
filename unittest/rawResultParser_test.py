@@ -1,7 +1,7 @@
 import sys, os
 sys.path.append(os.path.abspath(os.path.join(os.getcwd())))
 from utils.baselines import ParserBasicTS, Results, ParserD2STGNN, ParserLargeST, ParserPatchSTG, RawLargeST, RawPatchSTG, RawRAGL, RawRPMixer
-cases = 'PatchSTG_RAGL'
+cases = 'LargeST'
 if cases == 'STD-MAE':
     # downloaded in STD-MAE https://github.com/Jimmy-7664/STD-MAE
     paths = { # 官方训练结果数据，任意位置解压，替换为你的位置
@@ -19,7 +19,7 @@ if cases == 'STD-MAE':
 elif cases == 'LargeST':
     results = []
     for dataset, raw in RawLargeST.TABLE2.items():
-        results.append( ParserLargeST.parse(raw, dataset) )
+        results.append( ParserLargeST.parse(raw, dataset, tags='survey,2019') )
     results = Results.merge(*results)
     results.to_csv('results_largest.csv')
 elif cases == 'PatchSTG_RAGL':

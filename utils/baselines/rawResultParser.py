@@ -4,13 +4,114 @@ import csv
 from io import StringIO
 import re
 
-# usage: unittest/rawResultParser_test.py
+def _parseLine_common(line: str, model: str, items: list, metrics: list[str],
+                      dataset_getter, horizon_getter, item_name: str) -> Results:
+    ''' 通用解析函数，用于解析按 metrics 顺序排列的数值字符串
+    Args:
+        line: 输入的数值字符串，按空格分隔
+        model: 模型名称
+        items: 要遍历的项目列表（可以是 horizons 或 datasets）
+        metrics: 指标列表
+        dataset_getter: 函数，接收 (item, idx) 返回 dataset 名称
+        horizon_getter: 函数，接收 (item, idx) 返回 horizon 值
+        item_name: 项目类型名称，用于错误提示（如 "horizon" 或 "dataset"）
+    '''
+    results = Results()
+    values = line.strip().split()
+
+    if not values:
+        return results
+
+    num_metrics = len(metrics)
+    num_items = len(items)
+    expected_values = num_metrics * num_items
+
+    if len(values) < expected_values:
+        print(f"警告: 期望 {expected_values} 个数值，但只找到 {len(values)} 个")
+        return results
+
+    for idx, item in enumerate(items):
+        base_idx = idx * num_metrics
+        try:
+            metric_values = {}
+            for m_idx, metric in enumerate(metrics):
+                value_str = values[base_idx + m_idx].replace('%', '')
+                metric_values[metric] = round(float(value_str), 2)
+
+            eval_res = EvaluateResult(
+                metric_values.get('MAE', 0.0),
+                metric_values.get('MAPE', 0.0),
+                metric_values.get('RMSE', 0.0)
+            )
+
+            dataset = dataset_getter(item, idx)
+            horizon = horizon_getter(item, idx)
+            split = getattr(item, 'split', "6:2:2") if hasattr(item, 'split') else "6:2:2"
+            inLen = getattr(item, 'inLen', 12) if hasattr(item, 'inLen') else 12
+            outLen = getattr(item, 'outLen', 12) if hasattr(item, 'outLen') else 12
+            source = getattr(item, 'source', '') if hasattr(item, 'source') else ''
+            tags = getattr(item, 'tags', 'survey') if hasattr(item, 'tags') else 'survey'
+
+            result = Result(model, dataset, eval_res, split, inLen, outLen, horizon, source, tags)
+            results.append(result)
+        except (ValueError, IndexError) as e:
+            print(f"解析 {item_name} {item} 时出错: {e}")
+            continue
+
+    return results
+
+def parseLine_horizons(line: str, model: str, datasets: str, split="6:2:2", inLen=12, outLen=12,
+                       tags="survey", source='', horizons:list[str]=[3,6,12,-1],
+                       metrics:list[str]=['MAE', 'RMSE', 'MAPE']) -> Results:
+    ''' 输入一行字符串 line，按空格隔开每个数值。顺序是 metrics 顺序；前三个数值是 horizons[0]，第 4-6 个是 horizons[1]，依此类推。
+    usage: unittest/addLineToBaselineResults_test.py '''
+
+    class Item:
+        def __init__(self, horizon_val):
+            self.horizon = horizon_val
+            self.split = split
+            self.inLen = inLen
+            self.outLen = outLen
+            self.source = source
+            self.tags = tags
+
+    items = [Item(h) for h in horizons]
+    return _parseLine_common(
+        line, model, items, metrics,
+        dataset_getter=lambda item, idx: datasets,
+        horizon_getter=lambda item, idx: item.horizon,
+        item_name="horizon"
+    )
+
+def parseLine_datasets(line: str, model: str, datasets: list[str]=['PEMS03', 'PEMS04', 'PEMS07', 'PEMS08'],
+                       split="6:2:2", inLen=12, outLen=12, tags="survey", source='', horizon=-1,
+                       metrics:list[str]=['MAE', 'RMSE', 'MAPE']) -> Results:
+    ''' 输入一行字符串 line，按空格隔开每个数值。顺序是 metrics 顺序；前三个数值是 datasets[0]，第 4-6 个是 datasets[1]，依此类推。
+    usage: unittest/addLineToBaselineResults_test.py '''
+
+    class Item:
+        def __init__(self, dataset_name):
+            self.dataset = dataset_name
+            self.split = split
+            self.inLen = inLen
+            self.outLen = outLen
+            self.source = source
+            self.tags = tags
+
+    items = [Item(d) for d in datasets]
+    return _parseLine_common(
+        line, model, items, metrics,
+        dataset_getter=lambda item, idx: item.dataset,
+        horizon_getter=lambda item, idx: horizon,
+        item_name="dataset"
+    )
 
 class ParserBasicTS:
     ''' 从 BasicTS 格式的 checkpoints 的 .log 里提取结果
-    BasicTS https://github.com/GestaltCogTeam/BasicTS '''
+    BasicTS https://github.com/GestaltCogTeam/BasicTS 
+    usage: unittest/rawResultParser_test.py '''
     @staticmethod
-    def parse_horizon(path: str, dataset: str, model: str, horizons:str=[3,6,12], split="6:2:2", inLen=12, outLen=12, tags="survey", source=''):
+    def parse_horizon(path: str, dataset: str, model: str, horizons:str=[3,6,12], split="6:2:2", inLen=12, outLen=12, tags="survey", source='') -> Results:
         ''' 取 log 里最后的结果，就是 test horizon '''
         results = Results()
         try:
@@ -42,7 +143,8 @@ class ParserBasicTS:
 def _parse_largest_like(input_str: str, dataset: str, split: str, inLen: int, outLen: int, tags: str, source: str, has_param: bool) -> Results:
     """公共解析器：按顺序消费 token；支持一行包含多个模型块。
     has_param=True 时：模型名以 Param（98K/1.2M/3B/-/–/—）结束；
-    has_param=False 时：模型名后直接是 12 个数值指标（遇到数字即进入指标区）。"""
+    has_param=False 时：模型名后直接是 12 个数值指标（遇到数字即进入指标区）。
+    usage: unittest/rawResultParser_test.py  """
     results = Results()
     text = input_str.strip()
     if not text:

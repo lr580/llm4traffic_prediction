@@ -8,11 +8,14 @@ from utils.datasets import PEMSDatasetHandler, DataList
 prompt = PromptHANeighbor()
 handler = PEMSDatasetHandler(3, loadData=True, stat=True)
 datalist = DataList.load('data/tiny/PEMS03/32-5.json')
-model_scheme = 'gpt-5.2'
+model_scheme = 'gemini3'
 match model_scheme:
     case 'gpt-5.2':
         query = OpenAIQuery(name='renice')
         runid = '32-5-gpt5-2'
+    case 'gemini3': # fail
+        query = OpenAIQuery(name='renice-gemini')
+        runid = '32-5-gemini3'
     case _: # deepseek
         query = OpenAIQuery(name='deepseek')
         runid = '32-5a'

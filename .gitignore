@@ -7,3 +7,4 @@ img/
 !requirements.txt
 report.md
 .codebuddy
+.claude/

@@ -67,7 +67,7 @@ class LLMmodel():
         datalist.save(os.path.join(self.path, 'results_tiny_test.json'))
         
     def cost(self, unitTime=timedelta(seconds=7), unitMoney=0.001):
-        '''求完成预测要多少时间和金钱(调用API费用)'''
+        '''估算，求完成预测要多少时间和金钱(调用API费用)'''
         n = self.handler.dataset.test_ratio * self.handler.dataset.n * self.handler.dataset.t
         print(n)
         totalTime = unitTime * n
