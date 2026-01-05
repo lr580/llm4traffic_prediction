@@ -10,11 +10,15 @@ class Graph():
     def get_neighbors(self, node:int):
         return np.nonzero(self.g[node])[0]
     
-class PEMSGraph(Graph):
+class BasicTSGraph(Graph):
+    def __init__(self, dataset):
+        path = f'data/processed/{dataset}/adj_mx.pkl'
+        super().__init__(path)
+    
+class PEMSGraph(BasicTSGraph): # 向下兼容
     def __init__(self, x):
         assert str(x) in '3478' and len(str(x)) == 1
-        path = f'data/processed/PEMS0{x}/adj_mx.pkl'
-        super().__init__(path)
+        super().__init__(f'PEMS0{x}')
 
 if __name__ == '__main__':
     g = PEMSGraph(3)

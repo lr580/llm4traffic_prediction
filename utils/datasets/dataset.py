@@ -69,16 +69,24 @@ class Dataset():
         batch_y = np.stack(batch_y, axis=0)
         return batch_X, batch_y, batch_index
     
-class PEMSDataset(Dataset):
+class BasicTSDataset(Dataset):
     ''' Data from BasicTS (v0.x) https://github.com/GestaltCogTeam/BasicTS '''
-    def load_data(self, x:int):
-        with open(f'data/processed/PEMS0{x}/desc.json', encoding='utf-8') as f:
+    def load_data(self, dataset:str):
+        if not dataset:
+            dataset = self.dataset
+        with open(f'data/processed/{dataset}/desc.json', encoding='utf-8') as f:
             desc = json.load(f)
         shape = tuple(desc['shape']) # 要用 tuple 而不是 list，否则一些版本会出问题
         self.desc_json = desc # for future usage / reflection
-        filepath = f'data/processed/PEMS0{x}/data.dat'
+        filepath = f'data/processed/{dataset}/data.dat'
         return np.memmap(filepath, dtype=np.float32, mode='r', shape=shape)
     
+    def __init__(self, path:str):
+        self.dataset = path
+        super().__init__(path)
+    
+class PEMSDataset(BasicTSDataset):
     def __init__(self, x):
         self.x = x
-        super().__init__(x)
+        self.dataset = f'PEMS0{x}'
+        super().__init__(self.dataset)

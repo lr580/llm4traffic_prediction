@@ -5,10 +5,9 @@ from .statHandler import *
 from .data import *
 from ..metrics import plot_time_series, ndarray2plot
 import datetime
-class DatasetHanlder():
+class DatasetHandler():
     def __init__(self, stat=False, loadData=False): # to be implemented by subclass
-        self.space = self.load_space()
-        self.name = self.load_name()
+        self.loads()
         if loadData:
             self.dataset = Dataset()
         self.graph = Graph()
@@ -21,6 +20,11 @@ class DatasetHanlder():
     
     def load_name(self): # to be implemented by subclass
         return 'undefined'
+    
+    def loads(self):
+        ''' 载入数据集名字、空间信息 '''
+        self.space = self.load_space()
+        self.name = self.load_name()
     
     def buildSingleInput(self, i:int, j:int, copy:bool):
         X, y = self.dataset.get_data(i, j, copy)
@@ -80,7 +84,7 @@ class DatasetHanlder():
         plots.append(ndarray2plot(ha, self.timeCalc.getStartTime(l), 'HA', 'orange', granularity=self.timeCalc.granularity))
         plot_time_series(plots, title=f'Traffic Flow in time [{l}, {r}) sensor {j} {self.timeCalc.getWeek(l)}', figsize=figsize)
 
-class PEMSDatasetHandler(DatasetHanlder):
+class PEMSDatasetHandler(DatasetHandler):
     def load_space(self):
         # the information from https://www.sciencedirect.com/science/article/pii/S0957417422011654
         s = '美国加州(California, USA)的'
@@ -105,7 +109,33 @@ class PEMSDatasetHandler(DatasetHanlder):
             self.dataset = PEMSDataset(x)
         self.graph = PEMSGraph(x)
         self.timeCalc = PEMSTimeCalc(x)
-        self.name = self.load_name()
-        self.space = self.load_space()
+        self.loads()
         if stat:
             self.stat = PEMS_HAstat(self.dataset)
+            
+class LargeSTDatasetHandler(DatasetHandler):
+    def load_space(self):
+        ''' LargeST paper https://proceedings.neurips.cc/paper_files/paper/2023/file/ee57cd73a76bd927ffca3dda1dc3b9d4-Paper-Datasets_and_Benchmarks.pdf '''
+        s = '美国加州(California, USA)'
+        match self.dataset:
+            case 'GLA':
+                s += '的大洛杉矶区域(GLA, Greater Los Angeles)，包含Los Angeles, Orange, Riverside, San Bernardino, and Ventura'
+            case 'GBA':
+                s += '的旧金山大湾区(GBA, Greater Bay Area)，包含Alameda, Contra Costa, Marin, Napa, San Benito, San Francisco, San Mateo, Santa Clara, Santa Cruz, Solano, and Sonoma'
+            case 'SD':
+                s += '的圣地亚哥区域(SD, San Diego)'
+        return s
+        # 此外，点数分别是 {'CA':8600, 'GBA': 3834, 'GLA': 2352, 'SD': 716} 在数据集可以验证。
+        
+    def load_name(self):
+        return self.dataset
+    
+    def __init__(self, dataset:int, stat=False, loadData=False):
+        self.dataset = dataset
+        if loadData:
+            self.dataset = BasicTSDataset(dataset)
+        self.graph = BasicTSGraph(dataset)
+        self.timeCalc = LargeSTTimeCalc()
+        if stat:
+            self.stat = BasicTSHAstat(self.dataset)
+        self.loads()

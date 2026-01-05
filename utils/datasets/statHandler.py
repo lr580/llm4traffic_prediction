@@ -1,5 +1,5 @@
 import numpy as np
-from .dataset import PEMSDataset
+from .dataset import PEMSDataset, Dataset
 from tqdm import tqdm
 from typing import cast
 class HAstat():
@@ -50,11 +50,15 @@ class HAstat():
         res = self.avg[n][self.itod[tod]][self.idow[dow]]
         return cast("np.float32", res)
     
-class PEMS_HAstat(HAstat):
-    def __init__(self, dataset:PEMSDataset, train_ratio=0.6, metric=np.mean, l=0, r=0, customInterval=False):
+class BasicTSHAstat(HAstat):
+    def __init__(self, dataset:Dataset, train_ratio=0.6, metric=np.mean, l=0, r=0, customInterval=False):
         fulldata = dataset.data
         if not customInterval:
             l = 0
             r = int(dataset.t * train_ratio)
         data = fulldata[l:r, :, :]
         super().__init__(data, metric)
+    
+class PEMS_HAstat(BasicTSHAstat): # 向前兼容
+    def __init__(self, dataset:PEMSDataset, train_ratio=0.6, metric=np.mean, l=0, r=0, customInterval=False):
+        super().__init__(dataset, train_ratio, metric, l, r, customInterval)

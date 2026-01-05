@@ -1,13 +1,13 @@
 from .query import CacheQuery
 from .prompt import Prompt
-from utils.datasets import DatasetHanlder, DataList
+from utils.datasets import DatasetHandler, DataList
 from utils.common import now2str
 from datetime import timedelta
 import numpy as np
 import os
 from tqdm import tqdm
 class LLMmodel():
-    def __init__(self, query:CacheQuery, prompt:Prompt, handler:DatasetHanlder, runID=''):
+    def __init__(self, query:CacheQuery, prompt:Prompt, handler:DatasetHandler, runID=''):
         self.queryHandler = query
         self.prompt = prompt
         self.handler = handler

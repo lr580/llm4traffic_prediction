@@ -1,5 +1,5 @@
 # 负责跨数据格式转换
-from .handler import DatasetHanlder
+from .handler import DatasetHandler
 import pandas as pd
 from tqdm import tqdm
 import numpy as np
@@ -10,7 +10,7 @@ class BasicTS_TSLib_Converter:
     BasicTS https://github.com/GestaltCogTeam/BasicTS \n 
     TSLib https://github.com/thuml/Time-Series-Library \n
     see unittest/dataconert_test.py for usage example '''
-    def __init__(self, basicTSdataHandler:DatasetHanlder):
+    def __init__(self, basicTSdataHandler:DatasetHandler):
         self.handler = basicTSdataHandler
         
     def toTSLib(self, destpath:str): #, yName:str='OT'):
@@ -32,7 +32,7 @@ class BasicTS_Shrink:
     ''' 删除 BasicTS 数据的一些数据，截取前缀，得到微型数据集，用于快速跑实验 \n
     see unittest/datashrink_test.py for usage example'''
     @staticmethod
-    def shrink(basicTSdataHandler:DatasetHanlder, data_destpath:str, json_destpath:str, name:str='', T_reserve_rate:float=0.1):
+    def shrink(basicTSdataHandler:DatasetHandler, data_destpath:str, json_destpath:str, name:str='', T_reserve_rate:float=0.1):
         dataset = basicTSdataHandler.dataset
         data = dataset.data
 

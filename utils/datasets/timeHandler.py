@@ -32,16 +32,8 @@ class PEMSTimeCalc(TimeCalc):
         super().__init__(startTime, granularity)
         # 根据绘图结果，认为数据已经处理了时间的时区为当地时间，无需换算
         
-if __name__ == "__main__":
-    tc = PEMSTimeCalc(3)
-    print(tc.getStartTimeStr(0))
-    print(tc.getStartTimeStr(26207))
-    tc = PEMSTimeCalc(4)
-    print(tc.getStartTimeStr(0))
-    print(tc.getStartTimeStr(16991))
-    tc = PEMSTimeCalc(7)
-    print(tc.getStartTimeStr(0))
-    print(tc.getStartTimeStr(28223))
-    tc = PEMSTimeCalc(8)
-    print(tc.getStartTimeStr(0))
-    print(tc.getStartTimeStr(17855))
+class LargeSTTimeCalc(TimeCalc):
+    # 与主流 LargeST 数据集对应，数据集提出官方使用实验配置 15min, 2019 全年
+    def __init__(self, g = 15, start = datetime.datetime(2019, 1, 1, 0, 0, 0)):
+        granularity = datetime.timedelta(minutes=g)
+        super().__init__(start, granularity)

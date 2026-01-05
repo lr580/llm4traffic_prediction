@@ -1,4 +1,4 @@
-from utils.datasets import DatasetHanlder, SingleInput, TrendCalc
+from utils.datasets import DatasetHandler, SingleInput, TrendCalc
 from utils.common import date2str, vec2str
 
 class Prompt():
@@ -10,17 +10,17 @@ class Prompt():
         self.name = '' # to be implemented by subclass
         self.lang = lang # 'en' / 'zh' , for future usage
         
-    def generate(self, handler:DatasetHanlder, data:SingleInput) -> str:
+    def generate(self, handler:DatasetHandler, data:SingleInput) -> str:
         return '' # to be implemented by subclass
     
-    def getTimePoints(self, handler:DatasetHanlder, data:SingleInput):
+    def getTimePoints(self, handler:DatasetHandler, data:SingleInput):
         ''' X ∈ [X_startTime, Y_startTime), Y ∈ [Y_startTime, Y_endTime) \n\n common helper function '''
         Y_startTime = handler.timeCalc.getStartTime(data.i)
         X_startTime = handler.timeCalc.getStartTime(data.i - data.X.size)
         Y_endTime = handler.timeCalc.getStartTime(data.i + data.X.size)
         return X_startTime, Y_startTime, Y_endTime
     
-    def saySpace(self, handler:DatasetHanlder):
+    def saySpace(self, handler:DatasetHandler):
         return f'探测器位于{handler.space}。'
     
     def sayLocation(self, data:SingleInput):
@@ -29,12 +29,12 @@ class Prompt():
     def sayTargetLocation(self, data:SingleInput):
         return f'你只需要预测探测器{data.j}的流量。'
     
-    def sayInputTimeRange(self, handler:DatasetHanlder, data:SingleInput):
+    def sayInputTimeRange(self, handler:DatasetHandler, data:SingleInput):
         X_startTime, Y_startTime, _ = self.getTimePoints(handler, data)
         week = handler.timeCalc.getWeek(data.i)
         return f'探测器从{date2str(X_startTime)}到{date2str(Y_startTime)}({week})的流量为:'
     
-    def sayOutputTimeRange(self, handler:DatasetHanlder, data:SingleInput):
+    def sayOutputTimeRange(self, handler:DatasetHandler, data:SingleInput):
         _, Y_startTime, Y_endTime = self.getTimePoints(handler, data)
         return f'现在，请你预测接下来12个区间，即从{date2str(Y_startTime)}到{date2str(Y_endTime)}的流量。'
 
@@ -44,7 +44,7 @@ class PromptPlain(Prompt):
         super().__init__(lang)
         self.name = 'plain'
         
-    def generate(self, handler:DatasetHanlder, data:SingleInput) -> str:
+    def generate(self, handler:DatasetHandler, data:SingleInput) -> str:
         prompt = self.TASK_DESC
         prompt += self.saySpace(handler)
         prompt += self.INPUT_DESC + '\n'
@@ -60,17 +60,17 @@ class PromptHA(Prompt):
         super().__init__(lang)
         self.name = 'HA'
         
-    def sayInputHA(self, handler:DatasetHanlder, data: SingleInput, nei=-1):
+    def sayInputHA(self, handler:DatasetHandler, data: SingleInput, nei=-1):
         # ha = handler.stat.getRange(data.i - handler.dataset.T_input, data.i, data.j, handler.dataset.data)
         ha = handler.getInputHA(data, nei)
         return f'这段时间以往的平均流量是{vec2str(ha)}，因此，输入流量距离平均值的偏差是{vec2str(data.X - ha)}。'
         
-    def sayOutputHA(self, handler:DatasetHanlder, data: SingleInput):
+    def sayOutputHA(self, handler:DatasetHandler, data: SingleInput):
         # ha = handler.stat.getRange(data.i, data.i + handler.dataset.T_output, data.j, handler.dataset.data)
         ha = handler.getOutputHA(data)
         return f'你要预测的12个区间的在过往的平均流量是{vec2str(ha)}。'
         
-    def generate(self, handler:DatasetHanlder, data: SingleInput) -> str:
+    def generate(self, handler:DatasetHandler, data: SingleInput) -> str:
         prompt = self.TASK_DESC
         prompt += self.saySpace(handler)
         prompt += self.INPUT_DESC + '\n'
@@ -88,11 +88,11 @@ class PromptNeighbor(Prompt):
         super().__init__(lang)
         self.name = 'neighbor'
         
-    def sayNeighbors(self, handler:DatasetHanlder, data: SingleInput):
+    def sayNeighbors(self, handler:DatasetHandler, data: SingleInput):
         neighbors = handler.graph.get_neighbors(data.j)
         return f'与探测器{data.j}相邻的探测器编号为{vec2str(neighbors)}。'
     
-    def sayNeighborFlows(self, handler:DatasetHanlder, data: SingleInput):
+    def sayNeighborFlows(self, handler:DatasetHandler, data: SingleInput):
         neighbors = handler.graph.get_neighbors(data.j)
         prompt = '这些' + self.sayInputTimeRange(handler, data) + '\n'
         for nei in neighbors:
@@ -100,7 +100,7 @@ class PromptNeighbor(Prompt):
             prompt += f'探测器{nei}的流量为{vec2str(X_nei)}。\n'
         return prompt
     
-    def generate(self, handler:DatasetHanlder, data: SingleInput) -> str:
+    def generate(self, handler:DatasetHandler, data: SingleInput) -> str:
         prompt = self.TASK_DESC
         prompt += self.saySpace(handler)
         prompt += self.INPUT_DESC + '\n'
@@ -121,7 +121,7 @@ class PromptHANeighbor(PromptHA, PromptNeighbor):
         self.name = 'HA_neighbor'
         self.neiHA = neiHA
         
-    def sayNeighborFlowsWithHA(self, handler:DatasetHanlder, data: SingleInput):
+    def sayNeighborFlowsWithHA(self, handler:DatasetHandler, data: SingleInput):
         neighbors = handler.graph.get_neighbors(data.j)
         prompt = '这些' + self.sayInputTimeRange(handler, data) + '\n'
         for nei in neighbors:
@@ -130,7 +130,7 @@ class PromptHANeighbor(PromptHA, PromptNeighbor):
             prompt += self.sayInputHA(handler, data, nei) + '\n'
         return prompt
     
-    def generate(self, handler:DatasetHanlder, data: SingleInput) -> str:
+    def generate(self, handler:DatasetHandler, data: SingleInput) -> str:
         prompt = self.TASK_DESC
         prompt += self.saySpace(handler)
         prompt += self.INPUT_DESC + '\n'
@@ -161,7 +161,7 @@ class PromptTimeLLM(Prompt):
         prompt += f'前{len(lags)}个滞后项为{vec2str(lags)}。'
         return prompt
 
-    def generate(self, handler:DatasetHanlder, data:SingleInput) -> str:
+    def generate(self, handler:DatasetHandler, data:SingleInput) -> str:
         prompt = self.TASK_DESC
         prompt += self.saySpace(handler)
         prompt += self.INPUT_DESC + '\n'
@@ -178,7 +178,7 @@ class PromptTimeLLMWithHANei(PromptTimeLLM, PromptHANeighbor):
         super().__init__(lang)
         self.name = 'timellm_hanei'
 
-    def generate(self, handler:DatasetHanlder, data: SingleInput) -> str:
+    def generate(self, handler:DatasetHandler, data: SingleInput) -> str:
         prompt = self.TASK_DESC
         prompt += self.saySpace(handler)
         prompt += self.INPUT_DESC + '\n'

@@ -1,0 +1,17 @@
+import sys, os, tqdm
+sys.path.append(os.path.abspath(os.path.join(os.getcwd())))
+from utils.datasets import PEMSTimeCalc, LargeSTTimeCalc
+tc = PEMSTimeCalc(3)
+print(tc.getStartTimeStr(0))
+print(tc.getStartTimeStr(26207))
+tc = PEMSTimeCalc(4)
+print(tc.getStartTimeStr(0))
+print(tc.getStartTimeStr(16991))
+tc = PEMSTimeCalc(7)
+print(tc.getStartTimeStr(0))
+print(tc.getStartTimeStr(28223))
+tc = PEMSTimeCalc(8)
+print(tc.getStartTimeStr(0))
+print(tc.getStartTimeStr(17855))
+tc = LargeSTTimeCalc()
+print(tc.getStartTimeStr(35039))
