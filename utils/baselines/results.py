@@ -82,6 +82,15 @@ class Results:
     def append(self, result: Result):
         self.results.append(result)
 
+    def deduplicate(self):
+        """去重结果集，保留插入顺序。"""
+        unique_results = []
+        for result in self.results:
+            if result not in unique_results:
+                unique_results.append(result)
+        self.results = unique_results
+        return self
+
     def to_dataframe(self, **kwargs) -> pd.DataFrame:
         data = []
         for result in self.results:

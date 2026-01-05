@@ -40,7 +40,7 @@ class DatasetHandler():
         return DataList(data=batch)
     
     def rebuildBatchInput(self, batch:DataList):
-        '''历史版本可能缺失一些信息，进行补全'''
+        '''历史版本的数据集，可能缺失一些信息，进行补全'''
         for data in batch:
             if data.input.time is None:
                 data.input.time = self.timeCalc.getStartTime(data.input.i)

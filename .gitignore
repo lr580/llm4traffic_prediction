@@ -5,6 +5,7 @@ img/
 *.pdf
 *.zip
 !requirements.txt
-report.md
+docs/report.md
 .codebuddy
 .claude/
+AGENTS.md

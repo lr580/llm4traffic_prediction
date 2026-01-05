@@ -44,6 +44,11 @@ class EvaluateResult:
     def get(self, metric):
         return getattr(self, metric)
 
+    @staticmethod
+    def from_predictions(y_pred, y_true, verbose: bool = False) -> 'EvaluateResult':
+        mae, mape, rmse = evaluate_average(y_pred, y_true, verbose=verbose)
+        return EvaluateResult(mae=mae, mape=mape, rmse=rmse)
+
 @dataclass
 class SingleData:
     input : SingleInput

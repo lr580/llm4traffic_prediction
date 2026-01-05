@@ -1,4 +1,4 @@
-import sys, os, tqdm
+import sys, os
 sys.path.append(os.path.abspath(os.path.join(os.getcwd())))
 from utils.datasets import PEMSTimeCalc, LargeSTTimeCalc
 tc = PEMSTimeCalc(3)
