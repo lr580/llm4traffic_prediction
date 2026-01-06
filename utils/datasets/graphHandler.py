@@ -1,5 +1,6 @@
 import pickle
 import numpy as np
+import pandas as pd
 class Graph():
     def load_graph(self, filepath:str):
         with open(filepath, 'rb') as f:
@@ -19,6 +20,12 @@ class PEMSGraph(BasicTSGraph): # 向下兼容
     def __init__(self, x):
         assert str(x) in '3478' and len(str(x)) == 1
         super().__init__(f'PEMS0{x}')
+
+class LargeSTMeta():
+    def __init__(self, dataset: str):
+        path = f'data/processed/{dataset}/meta.csv'
+        self.meta = pd.read_csv(path)
+        print(self.meta)
 
 if __name__ == '__main__':
     g = PEMSGraph(3)

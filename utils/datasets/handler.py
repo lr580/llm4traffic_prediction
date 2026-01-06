@@ -130,7 +130,7 @@ class LargeSTDatasetHandler(DatasetHandler):
     def load_name(self):
         return self.dataset
     
-    def __init__(self, dataset:int, stat=False, loadData=False):
+    def __init__(self, dataset:int, stat=False, loadData=False, loadMeta=False):
         self.dataset = dataset
         if loadData:
             self.dataset = BasicTSDataset(dataset)
@@ -138,4 +138,6 @@ class LargeSTDatasetHandler(DatasetHandler):
         self.timeCalc = LargeSTTimeCalc()
         if stat:
             self.stat = BasicTSHAstat(self.dataset)
+        if loadMeta:
+            self.meta = LargeSTMeta(dataset)
         self.loads()

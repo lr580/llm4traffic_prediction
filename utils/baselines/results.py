@@ -83,7 +83,7 @@ class Results:
         self.results.append(result)
 
     def deduplicate(self):
-        """去重结果集，保留插入顺序。"""
+        """去重结果集，保留插入顺序。 usage: unittest/baselinesUnique_test.py """
         unique_results = []
         for result in self.results:
             if result not in unique_results:
