@@ -4,7 +4,6 @@ from numpy.typing import NDArray
 import json
 import os
 from ..common import date2str, str2date
-from ..metrics import evaluate_average, plot_time_series, ndarray2plot, plot_grouped_bar
 from datetime import datetime, timedelta
 import pandas as pd
 from typing import Optional
@@ -46,6 +45,7 @@ class EvaluateResult:
 
     @staticmethod
     def from_predictions(y_pred, y_true, verbose: bool = False) -> 'EvaluateResult':
+        from ..metrics import evaluate_average
         mae, mape, rmse = evaluate_average(y_pred, y_true, verbose=verbose)
         return EvaluateResult(mae=mae, mape=mape, rmse=rmse)
 
@@ -74,9 +74,11 @@ class SingleData:
             self.y_pred = np.array(self.y_pred, dtype=np.float32)
             
     def evaluate(self):
+        from ..metrics import evaluate_average
         self.result = EvaluateResult(*evaluate_average(self.y_pred, self.y_true))
         
     def dataToPlot(self, granularity=timedelta(minutes=5)):
+        from ..metrics import ndarray2plot
         time = self.input.time
         assert time is not None and self.y_true is not None and self.y_pred is not None
         return [ndarray2plot(self.input.X, time - self.input.X.size * granularity, 'input', 'blue', granularity=granularity),
@@ -84,6 +86,7 @@ class SingleData:
             ndarray2plot(self.y_pred, time, 'y_pred', 'green', granularity=granularity)]
         
     def plotResult(self, granularity=timedelta(minutes=5), show=True, savepath=''):
+        from ..metrics import plot_time_series
         # 这个参数，主要是不想把粒度加到 dataclass 了，没啥必要
         plot_time_series(self.dataToPlot(granularity), title = f'{self.input.i} - {self.input.j} Prediction Result', show=show, savepath=savepath)
     
@@ -136,6 +139,7 @@ class DataEncoder(json.JSONEncoder): # (json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
     
 def plotCompareDataResult(datalists: list[DataList], names:list[str], metric:str, savepath:str='', show=True, figsize=(12,6)):
+    from ..metrics import plot_grouped_bar
     '''假定每个所用数据及其顺序相同'''
     x_labels = []
     for data in datalists[0]:

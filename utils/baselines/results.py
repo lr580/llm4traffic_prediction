@@ -2,10 +2,15 @@
 用法参见 unittest/baselineResults_test.py 和 baselineResults_test2.py'''
 from __future__ import annotations
 from dataclasses import dataclass, asdict, field
-from ..datasets.data import EvaluateResult
 from typing import List
 import pandas as pd
 from pathlib import Path
+
+@dataclass
+class EvaluateResult:
+    mae: float
+    mape: float
+    rmse: float
 
 @dataclass
 class Result:
