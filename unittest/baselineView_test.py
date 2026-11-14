@@ -14,7 +14,7 @@ if cases == 'PEMS0x':
     print(pdDataFrame2str(df, prefix = ''))
     # print(pdDataFrame2str(df, prefix = '', cell_decorator=round_add_decorator))
 elif cases == 'LargeST':
-    results.flit(tags='2019', horizons=[-1])
+    results.flit(tags='2019', horizons=[-1], inLen=12, outLen=12)
     # results.flit(models=['DSTAGNN', 'STGODE', 'STWave', 'AGCRN', 'DGCRN', 'D2STGNN', 'GWNet', 'ASTGCN', 'DCRNN', 'STGCN'])
     CitationHandler.render(results)
     df = results.dataset_view(['SD', 'GBA', 'GLA', 'CA']).sort_values(by=('SD', 'mae'), ascending=False)
@@ -26,7 +26,7 @@ elif cases == 'LargeST':
     # tex = wrap_cells_with_added(bold_tex)
     # print(bold_tex)
 elif cases == 'v3':
-    results.flit(tags='2019', horizons=[-1])
+    results.flit(tags='2019', horizons=[-1], inLen=12, outLen=12)
     results.flit(models=['HL', 'LSTM', 'ASTGCN', 'DSTAGNN', 'DCRNN', 'STGCN', 'STGODE', 'RAST', 'BigST', 'STTN', 'STWave', 'AGCRN', 'DGCRN'])
     my_result = Results.from_csv("utils/baselines/v3.csv")
     results = Results.merge(results, my_result)

@@ -34,7 +34,9 @@ elif cases == 'PatchSTG_RAGL':
         results.append( ParserPatchSTG.parse(raw, dataset, tags='survey,2019') )
     results = Results.merge(*results)
 
-    includeRPMixer = True
+    # RPMixer Table 1 重跑的 ASTGCN/DCRNN/STGCN 与 LargeST 原论文数值不同，
+    # 同标签并入 baselineResults.csv 会被 dataset_view() 取平均，故不再合并。
+    includeRPMixer = False
     if includeRPMixer:
         results2 = []
         for dataset, raw in RawRPMixer.TABLE1.items():

@@ -64,7 +64,7 @@ def parseLine_horizons(line: str, model: str, datasets: str, split="6:2:2", inLe
                        tags="survey", source='', horizons:list[str]=[3,6,12,-1],
                        metrics:list[str]=['MAE', 'RMSE', 'MAPE']) -> Results:
     ''' 输入一行字符串 line，按空格隔开每个数值。顺序是 metrics 顺序；前三个数值是 horizons[0]，第 4-6 个是 horizons[1]，依此类推。
-    usage: unittest/addLineToBaselineResults_test.py '''
+    usage: unittest/abandoned/addLineToBaselineResults_test.py (已废弃，仅作历史参考) '''
 
     class Item:
         def __init__(self, horizon_val):
@@ -87,7 +87,7 @@ def parseLine_datasets(line: str, model: str, datasets: list[str]=['PEMS03', 'PE
                        split="6:2:2", inLen=12, outLen=12, tags="survey", source='', horizon=-1,
                        metrics:list[str]=['MAE', 'RMSE', 'MAPE']) -> Results:
     ''' 输入一行字符串 line，按空格隔开每个数值。顺序是 metrics 顺序；前三个数值是 datasets[0]，第 4-6 个是 datasets[1]，依此类推。
-    usage: unittest/addLineToBaselineResults_test.py '''
+    usage: unittest/abandoned/addLineToBaselineResults_test.py (已废弃，仅作历史参考) '''
 
     class Item:
         def __init__(self, dataset_name):
@@ -109,7 +109,7 @@ def parseLine_datasets(line: str, model: str, datasets: list[str]=['PEMS03', 'PE
 class ParserBasicTS:
     ''' 从 BasicTS 格式的 checkpoints 的 .log 里提取结果
     BasicTS https://github.com/GestaltCogTeam/BasicTS 
-    usage: unittest/rawResultParser_test.py '''
+    usage: unittest/abandoned/rawResultParser_test.py (已废弃，仅作历史参考) '''
     @staticmethod
     def parse_horizon(path: str, dataset: str, model: str, horizons:str=[3,6,12], split="6:2:2", inLen=12, outLen=12, tags="survey", source='') -> Results:
         ''' 取 log 里最后的结果，就是 test horizon '''
@@ -144,7 +144,7 @@ def _parse_largest_like(input_str: str, dataset: str, split: str, inLen: int, ou
     """公共解析器：按顺序消费 token；支持一行包含多个模型块。
     has_param=True 时：模型名以 Param（98K/1.2M/3B/-/–/—）结束；
     has_param=False 时：模型名后直接是 12 个数值指标（遇到数字即进入指标区）。
-    usage: unittest/rawResultParser_test.py  """
+    usage: unittest/abandoned/rawResultParser_test.py (已废弃，仅作历史参考)  """
     results = Results()
     text = input_str.strip()
     if not text:

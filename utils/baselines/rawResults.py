@@ -1,4 +1,4 @@
-# usage: unittest/rawResultParser_test.py
+# usage: unittest/abandoned/rawResultParser_test.py (已废弃，仅作历史参考)
 class RawLargeST:
     ''' paper LargeST: A Benchmark Dataset for Large-Scale Traffic Forecasting 
     粒度 15 分钟 2019 6-2-2 '''

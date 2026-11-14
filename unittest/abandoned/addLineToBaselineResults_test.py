@@ -6,15 +6,15 @@ paper = 'RAST'
 match paper:
     case 'RAST':
         # A Retrieval Augmented Spatio-Temporal Framework for Traffic Prediction
-        # Table 1
-        line_PEMS = '15.36 25.81 16.47 18.39 29.93 12.43 19.52 32.73 8.23 14.20 23.49 9.29'
+        # Table 1 (PEMS03/04/07/08)
+        line_PEMS = '15.20 25.81 16.12 18.39 29.93 12.43 19.52 32.73 8.23 14.16 23.33 9.27'
         result_PEMS = parseLine_datasets(line_PEMS, paper)
 
-        # Table 3
-        line_SD = '16.23 26.75 10.23 19.12 32.05 12.45 23.20 40.72 16.06 19.00 32.64 12.53'
+        # Table 2 (LargeST, 最终版 PDF；数值顺序 MAE RMSE MAPE)
+        line_SD = '15.84 26.41 10.15 18.55 31.56 12.13 22.18 39.43 15.38 18.39 31.96 12.19'
         result_SD = parseLine_horizons(line_SD, paper, 'SD', tags='survey,2019')
 
-        line_GBA = '18.57 30.12 14.60 22.12 35.54 18.06 26.31 43.14 21.75 21.75 35.82 17.90'
+        line_GBA = '17.71 29.29 13.72 20.86 34.26 16.63 24.97 41.33 21.25 20.64 34.47 16.63'
         result_GBA = parseLine_horizons(line_GBA, paper, 'GBA', tags='survey,2019')
         result = Results.merge(result_PEMS, result_SD, result_GBA)
         result.to_csv('RAST.csv')
