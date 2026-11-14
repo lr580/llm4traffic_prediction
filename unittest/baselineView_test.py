@@ -25,3 +25,10 @@ elif cases == 'LargeST':
     bold_tex = bold_tex.replace('nan', '-')
     # tex = wrap_cells_with_added(bold_tex)
     # print(bold_tex)
+elif cases == 'v3':
+    results.flit(tags='2019', horizons=[-1])
+    results.flit(models=['HL', 'LSTM', 'ASTGCN', 'DSTAGNN', 'DCRNN', 'STGCN', 'STGODE', 'RAST', 'BigST', 'STTN', 'STWave', 'AGCRN', 'DGCRN'])
+    my_result = Results.from_csv("utils/baselines/v3.csv")
+    results = Results.merge(results, my_result)
+    df = results.dataset_view(['SD', 'GBA', 'GLA', 'CA']).sort_values(by=('SD', 'mae'), ascending=False)
+    print(df)

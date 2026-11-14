@@ -261,5 +261,12 @@
   "PatchSTG": "T-379",
   "LEAF": "T-397",
   "SAGDFN": "T-406",
-  "HimNet": "T-411"
+  "HimNet": "T-411",
+  "MAGE": "T-453",
+  "STUNet": "T-454",
+  "NEST": "T-455",
+  "VisionST": "T-465",
+  "HieraMix": "T-456",
+  "PatchID": "T-466",
+  "SqLinear": "T-467"
 }
