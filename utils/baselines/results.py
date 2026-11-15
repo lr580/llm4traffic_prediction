@@ -5,6 +5,7 @@ from dataclasses import dataclass, asdict, field
 from ..datasets.data import EvaluateResult
 from ..common import pdDataFrame2str, bold_column_min_in_latex_table
 from typing import List
+from copy import deepcopy
 import pandas as pd
 from pathlib import Path
 
@@ -68,6 +69,22 @@ class Result:
     
     def horizon_satisfy(self, horizons: int):
         return (len(horizons) == 0 and self.horizon == -1) or (self.horizon in horizons)
+    
+    def paper_satisfy(self, meta: dict, ccf: list, venues: list, year_range: tuple | None,
+                      include_unknown: bool = False):
+        '''论文元数据条件；不带条件恒 True，三字段皆空按 include_unknown 决定。'''
+        if not (ccf or venues or year_range is not None):
+            return True
+        if not any(meta.values()):
+            return include_unknown
+        if ccf and meta['ccf'] not in ccf:
+            return False
+        if venues and meta['venue'] not in venues:
+            return False
+        if year_range is not None:
+            y = meta['year']
+            return isinstance(y, int) and year_range[0] <= y <= year_range[1]
+        return True
     
 @dataclass
 class Results:
@@ -170,7 +187,16 @@ class Results:
             merged_results = Results.from_dataframe(df.drop_duplicates())
         return merged_results
     
-    def flit(self, datasets=[], split='6:2:2', tags='', inLen=-1, outLen=-1, models=[], inner=True, horizons=[]):
+    def flit(self, datasets=[], split='6:2:2', tags='', inLen=-1, outLen=-1, models=[], inner=True, horizons=[],
+             ccf=None, year_range=None, venues=None, include_unknown=False, paper_meta={}):
+        '''唯一的筛选入口：实验条件之外，也可按论文元数据 ccf / venues / year_range 筛。
+
+        论文条件由 Result.paper_satisfy 判定；元数据由调用方经 paper_meta 传入
+        （{model: {venue, year, ccf}}），本模块不查表、不依赖 citations。
+        带论文条件时不传 paper_meta 则各模型元数据视为空；不带论文条件时不需要它，
+        行为与旧版 flit 完全一致，即仍套用默认实验条件（split='6:2:2'、horizons=[] 只看 horizon=-1）。
+        inner=False 返回深拷贝的新 Results，render 就地改写 model 不会串改原集合。
+        '''
         results = []
         for result in self.results:
             ok = True
@@ -180,14 +206,16 @@ class Results:
                 ok = False
             if not (result.model_satisfy(models) and result.horizon_satisfy(horizons)):
                 ok = False
+            if not result.paper_satisfy(paper_meta.get(result.model, {}), ccf, venues, year_range, include_unknown):
+                ok = False
             if ok:
                 results.append(result)
         if inner:
             self.results = results
             return self
         else:
-            return Results(results=results)
-        
+            return Results(results=[deepcopy(result) for result in results])
+
     def sort(self, key='mape') -> pd.DataFrame:
         '''注意返回 DataFrame'''
         return self.to_dataframe().sort_values(by=key)

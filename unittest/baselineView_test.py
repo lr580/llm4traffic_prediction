@@ -3,7 +3,7 @@ sys.path.append(os.path.abspath(os.path.join(os.getcwd())))
 from utils.baselines import Results, CitationHandler
 from utils.common import pdDataFrame2str, round_add_decorator, bold_column_min_in_latex_table, wrap_cells_with_added
 results = Results.get_baseline_results()
-cases = 'LargeST'
+cases = 'paperMeta'
 if cases == 'PEMS0x':
     results.flit([f'PEMS0{x}' for x in '3478'], horizons=[-1], tags='survey')
     extCite = {'ARIMA': 'O-64', 'VAR': 'O-65', 'SVR': 'O-66'}
@@ -25,6 +25,17 @@ elif cases == 'LargeST':
     bold_tex = bold_tex.replace('nan', '-')
     # tex = wrap_cells_with_added(bold_tex)
     # print(bold_tex)
+elif cases == 'paperMeta':
+    # 论文元数据初版演示：先按论文属性过滤，再把显示名贴到 df.index（不改 model 主键）
+    paper_meta = {r.model: CitationHandler.meta(CitationHandler.cite_of_model(r.model)) for r in results}
+    res = Results.get_baseline_results().flit(ccf=['A'], year_range=(2025, 2026), paper_meta=paper_meta, inner=False)
+    res.flit(tags='2019', horizons=[-1])
+    df = res.dataset_view(['SD', 'GBA', 'GLA', 'CA'])
+    formatter = CitationHandler.paperCiteFormatter
+    cite_of = {m: CitationHandler.cite_of_model(m) for m in df.index}
+    df = df.rename(index={m: formatter(m, c, CitationHandler.meta(c)) for m, c in cite_of.items()})
+    print(pdDataFrame2str(df, prefix=''))
+    print(bold_column_min_in_latex_table(pdDataFrame2str(df, prefix='')))
 elif cases == 'v3':
     results.flit(tags='2019', horizons=[-1], inLen=12, outLen=12)
     results.flit(models=['HL', 'LSTM', 'ASTGCN', 'DSTAGNN', 'DCRNN', 'STGCN', 'STGODE', 'RAST', 'BigST', 'STTN', 'STWave', 'AGCRN', 'DGCRN'])
