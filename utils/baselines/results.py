@@ -1,8 +1,9 @@
 '''整理汇总基准模型的实验结果；数据在同目录同名baselineResults.csv下，目前只收录了部分结果，大部分是新论文的；
-用法参见 unittest/baselineResults_test.py 和 baselineResults_test2.py'''
+出表用法参见 main.py；筛选、视图等示例参见 unittest/baselineResults_test.py 和 baselineResults_test2.py'''
 from __future__ import annotations
 from dataclasses import dataclass, asdict, field
 from ..datasets.data import EvaluateResult
+from ..common import pdDataFrame2str, bold_column_min_in_latex_table
 from typing import List
 import pandas as pd
 from pathlib import Path
@@ -241,4 +242,20 @@ class Results:
         """根据给定的datasets参数生成多级表头的DataFrame。
         索引是model，第一级列是不同数据集，第二级列为各个数据集的mae、mape、rmse指标。"""
         return self.multi_index_view(group_by='dataset', groups=datasets)
+
+    def to_latex_table(self, datasets: list = None, sort_by=None,
+                       bold_min: bool = True, nan: str = '-', **kwargs) -> str:
+        """把结果整理成 LaTeX 表格行（不含表头/表尾），index 列即模型名。
+
+        datasets/sort_by 控制取哪个数据集视图与排序；bold_min 加粗每列最小值；
+        kwargs 透传给 pdDataFrame2str（如 suffix、cell_decorator）。用法见 main.py。
+        """
+        df = self.dataset_view(datasets) if datasets else self.dataset_view()
+        if sort_by is not None:
+            df = df.sort_values(by=sort_by, ascending=False)
+        kwargs.setdefault('prefix', '')
+        tex = pdDataFrame2str(df, **kwargs)
+        if bold_min:
+            tex = bold_column_min_in_latex_table(tex)
+        return tex.replace('nan', nan) if nan else tex
     

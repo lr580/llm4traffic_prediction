@@ -10,6 +10,14 @@
 
 包依赖参见 `requirements.txt`。
 
+项目入口 `main.py`（从仓库根目录运行）：
+
+- `python main.py` 默认打印 LargeST 基准模型结果的 DataFrame 视图
+- `--case {LargeST,PEMS0x,v3}` 切换场景
+- `--format latex` 改为输出 LaTeX 表格行，`--output table.tex` 写文本文件
+- 默认 df 格式下 `--output table.xlsx` 写出完整 Excel 表格（终端预览会截断，文件不会）
+- `--cite` / `--no-cite` 控制是否给模型名注入引用（默认按场景配置）
+
 数据集 `data/`
 
 - > `raw/` 原始数据 (自行下载，如参考 [STD-MAE](https://github.com/Jimmy-7664/STD-MAE) 的 `raw_data/`，目前无使用)

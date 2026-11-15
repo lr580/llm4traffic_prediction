@@ -156,7 +156,7 @@ def bold_column_min_in_latex_table(
     table_text: str,
     numeric_start_col: int = 1  # 从第2列开始视为数值列
 ) -> str:
-    ''' 例子见 unittest/baselineView_test.py 的 LargeST case '''
+    ''' 例子见 main.py 的 --format latex '''
     # 依赖上个实现中的: _parse_cell_value, _bold_first_number
     lines = [ln for ln in (table_text or "").splitlines() if ln.strip()]
     rows = [[c.strip() for c in ln.split('&')] for ln in lines]
