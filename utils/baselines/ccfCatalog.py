@@ -158,6 +158,7 @@ def normalize_venue(raw) -> str:
 ICDE 全称仅差 'Mining/Engineering'，第三步相似度过阈值曾误判为 ICDE。'''
 VENUE_NEGATIVES = [
     'IEEE International Conference on Data Mining',   # ICDM（含 ... Workshops 变体）
+    'Workshop',   # workshop 一律不算 CCF 目录正例（如 'ICML 2019 Workshop ...' 否则词命中 ICML）
 ]
 
 '''已知问题（2026-11 全库 632 篇实测，3 篇残余错误，均未进入 baselineResults.csv）：

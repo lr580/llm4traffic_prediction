@@ -18,7 +18,7 @@
 - `--format latex` 输出 LaTeX 表格行，`--output table.tex` 写文本文件
 - `--format excel` 导出样式化 Excel（双表头合并单元格、列宽自适应、每列最优加粗 / 次优下划线斜体、数据集分组竖线 + 外圈边框），默认写 `{场景}_view.xlsx`，可用 `--output` 指定路径
 - `df` 格式下 `--output` 写纯文本文件
-- `latex` / `excel` 表格输出中，非 CCF-A（含无引用键）模型的第一列模型名以斜体标注
+- `excel` 输出中，CCF-A 论文对应模型的第一列模型名加粗，其余（含无元数据）保持常规字体；`latex` / `df` 输出不对模型名做任何斜体或加粗装饰
 - `--name-style {plain,cite,paper}` 模型名渲染：`plain` 原样 / `cite` 注入引用键 / `paper` 显示为 `Model (VENUE YEAR)` 再注入引用键，venue/year 有其一即标注、全缺时降级（默认按场景配置）
 - `--ccf-a` 只保留发表于 CCF-A 的论文对应的模型
 - `--year START END` 只保留论文发表年份在区间内的模型，如 `--year 2025 2026`

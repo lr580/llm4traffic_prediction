@@ -70,49 +70,79 @@ class ZoteroHandler:
         m = re.search(r'\b((?:19|20)\d{2})\b', str(date or ''))
         return int(m.group(1)) if m else ''
 
+    @staticmethod
+    def _notes(items: list) -> dict:
+        '''子笔记里的录用事实：{父条目 key: 从笔记推断出的 venue 串}，没有笔记的条目不出现在结果里。
+
+        Zotero 里"已录用、待正式发表"常写成论文下的子笔记（如 'Comment: Accept by ICML 2026'）。
+        note 与父条目的先后顺序不保证，所以单独扫一遍 item 列表，供主循环查表兜底。
+
+        每条笔记的处理：剥 HTML 标签 → 按 'accepted by/to/at'、'to be published in' 等句式
+        取第一句 → 去掉 'IJCAI2022' 这类连写年份，得到候选串。本函数只管取出候选串，
+        是否采用、属于哪个目录由主循环交给 match_venue() 判定（正式字段优先）。
+
+        例：'Comment: Accept by ICML 2026' -> 'ICML 2026'；
+            'to be published in the 42nd IEEE ... (ICDE 26)' -> 全称保留，交给 match_venue 判 ICDE。
+        页数、under review、仓库链接等没有录用语义的笔记直接跳过；workshop 类能提取，
+        但会被 match_venue 的反例否决。完整写法清单见 unittest/paperMeta_test.py 的 [5]。
+        '''
+        notes = {}
+        for item in items:
+            data = item.get('data', {})
+            if data.get('itemType') != 'note' or not data.get('parentItem'):
+                continue
+            text = re.sub(r'<[^>]+>', ' ', str(data.get('note') or ''))
+            text = re.sub(r'\s+', ' ', text).strip()
+            for pat in (r'accept(?:ed)?\s+(?:by|to|at|in)\s+(.+)',
+                        r'(?:to\s+)?(?:published|appear)(?:\s+as\s+(?:a\s+)?(?:conference|journal)\s+paper)?'
+                        r'\s+(?:in|at)\s+(.+)'):
+                m = re.search(pat, text, re.I)
+                if m:
+                    venue = re.split(r'\.\s|[;]', m.group(1))[0]      # 只取第一句
+                    venue = re.sub(r'(?<=[A-Za-z])(?:19|20)\d{2}\b', '', venue)   # IJCAI2022 -> IJCAI
+                    notes[data['parentItem']] = venue.strip(' .,:')
+                    break
+        return notes
+
     def build_papers(self, items: list, verbose: bool = False):
-        '''Zotero item 列表 -> {引用键: 非空元数据字段}；统计由 verbose 就地打印，不返回。
+        '''Zotero item 列表 -> {引用键: 非空元数据字段}；只有 verbose=True 才打印统计
+        （item 数、引用键数、unresolved 种类、conflicts / badDates / duplicateKeys）。
 
-        空值字段不写入（不写即未知），不写 'unknown' 哨兵；读取端 meta() 补空串。
-        verbose=True 时打印 Zotero item 数、引用键数、未解析 venue 种类数以及
-        conflicts / badDates / duplicateKeys；missingKeys 依赖 citations.json，
-        由 CitationHandler.sync_from_zotero() 自行统计并打印。
+        约定：空值字段不写入（不写即未知），读取端 meta() 补空串。
 
-        处理规则（对应循环内的 (1)~(4)）：
-        (1) 过滤无关条目、解析引用键：itemType 为 attachment / note 直接跳过；
-            引用键只认 archiveLocation / citationKey 里以 'T-' 或 'O-' 开头的值，
-            archiveLocation 优先；两者都有效但不一致时仍取前者，只记 conflicts；
-            两字段都无有效值（空值或前缀不符）就跳过。被跳过的条目不进 papers，
-            也不触发后面的任何计数，但 verbose 的 Zotero item 数仍是原始 items 长度。
-            本步没有独立计数，过滤量只能由 len(items) 与 papers 数间接估算。
-            2026-11 实测当前库：1669 条 item 里过滤 1026 条
-            （attachment 966 / note 45 / 无有效键 15），保留 643 条且全部写入 papers；
-            数字随 Zotero 库变化，仅示量级。
-        (2) venue：按 VENUE_FIELDS 顺序取第一个非空字段，全空为 ''，
-            match_venue('') 返回 None 即 venue 留空；未命中的非空原始串计入 unresolved。
-            命中 A 类目录才写 ccf='A'；预印本与其它 itemType 一视同仁，
-            只要 venue 字段命中 A 类目录（如填了 'KDD'）同样写 ccf='A'。
-            已知漏判（高优先级字段顶掉可匹配的低优先级字段）见 ccfCatalog.py 的
-            VENUE_FIELDS 注释。
-        (3) 年份：从 date 取第一个 19xx/20xx 年份，取不到且 date 非空记 badDates。
-        (4) 写表：同键后写覆盖并记 duplicateKeys；空值字段省略。
+        处理流程：
+          0. 预扫子笔记：_notes() 收集 {父条目 key: 录用串}，供第 2 步兜底
+          1. 过滤与取键
+             - 跳过 itemType 为 attachment / note 的条目
+             - 引用键取 archiveLocation，其次 citationKey，只认 'T-' / 'O-' 前缀
+             - 两字段都有效但不一致时仍取 archiveLocation，只记 conflicts
+          2. venue / ccf
+             - 候选链：VENUE_FIELDS 中第一个非空字段 -> 子笔记录用串，依次交给 match_venue()
+             - 命中 A 类目录写 venue 缩写和 ccf='A'；都判不出则两字段留空
+             - 未命中的非空候选串计入 unresolved
+             - 预印本与正式论文一视同仁，字段能命中就判 A
+          3. year：date 中第一个 19xx/20xx 年份；date 非空但取不到记 badDates
+          4. 写表：同键后写覆盖并记 duplicateKeys
 
-        例（items 为 Zotero 本地 API 返回的元素，只列 data 中用到的字段）：
-            items = [
-                {'data': {'itemType': 'conferencePaper', 'archiveLocation': 'T-460',
+        已知局限：高优先级字段可能顶掉能匹配的低优先级字段，见 ccfCatalog.py 的 VENUE_FIELDS 注释。
+
+        例（note 的 parentItem 是父条目的 item key，不是引用键；完整用例见 paperMeta_test.py 的 [5]）：
+            正式字段命中：
+                {'data': {'key': 'a1', 'itemType': 'conferencePaper', 'archiveLocation': 'T-460',
                           'date': '2025-07-13',
                           'proceedingsTitle': 'Proceedings of the 42nd International '
-                                              'Conference on Machine Learning'}},
-                {'data': {'itemType': 'preprint', 'archiveLocation': 'T-59',
-                          'date': '2021-03-29', 'repository': 'arXiv'}},
-            ]
-            -> {'T-460': {'venue': 'ICML', 'year': 2025, 'ccf': 'A'},
-                'T-59':  {'year': 2021}}
-            arXiv 未命中 A 类目录，venue/ccf 为空故不写入；attachment / note 与
-            无有效引用键的条目会被跳过，不计入结果。
+                                              'Conference on Machine Learning'}}
+                -> {'T-460': {'venue': 'ICML', 'year': 2025, 'ccf': 'A'}}
+            仅子笔记录用事实：
+                {'data': {'key': 'b2', 'itemType': 'preprint', 'archiveLocation': 'T-455',
+                          'date': '2026-05-19', 'repository': 'arXiv'}}
+                {'data': {'itemType': 'note', 'parentItem': 'b2',
+                          'note': 'Comment: Accept by ICML 2026'}}
+                -> {'T-455': {'venue': 'ICML', 'year': 2026, 'ccf': 'A'}}
         '''
         papers, unresolved = {}, set()
         conflicts, bad_dates, duplicates = 0, 0, 0
+        notes = self._notes(items)   # 子笔记录用事实，venue 未命中时兜底
         for item in items:
             # (1) 过滤无关条目，解析引用键
             data = item.get('data', {})
@@ -125,11 +155,18 @@ class ZoteroHandler:
             if conflict:
                 conflicts += 1
 
-            # (2) venue 原始串 -> CCF-A 缩写 -> venue / ccf
-            raw = next((data.get(f) for f in VENUE_FIELDS if data.get(f)), '')
-            short = match_venue(raw)
-            if short is None and str(raw).strip():
-                unresolved.add(str(raw))
+            # (2) venue 候选链：正式字段原文优先，子笔记录用事实（'Comment: Accept by ICML 2026'）兜底
+            candidates = (
+                next((data.get(f) for f in VENUE_FIELDS if data.get(f)), ''),   # 正式字段原文
+                notes.get(data.get('key', ''), ''),                            # 子笔记录用事实
+            )
+            candidates = [cand for cand in candidates if cand.strip()]         # 空候选直接剔除
+            short = None
+            for cand in candidates:
+                short = match_venue(cand)
+                if short:
+                    break
+                unresolved.add(cand)   # 未命中串计入统计
             venue = short or ''
             ccf = 'A' if short in CCF_A_VENUES else ''
 

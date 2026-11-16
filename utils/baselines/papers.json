@@ -17,7 +17,9 @@
     "ccf": "A"
   },
   "O-14": {
-    "year": 2017
+    "venue": "ICLR",
+    "year": 2017,
+    "ccf": "A"
   },
   "O-15": {
     "venue": "NeurIPS",
@@ -35,7 +37,9 @@
     "ccf": "A"
   },
   "O-18": {
-    "year": 2018
+    "venue": "ICLR",
+    "year": 2018,
+    "ccf": "A"
   },
   "O-19": {
     "year": 2009
@@ -1588,7 +1592,9 @@
     "year": 2024
   },
   "T-426": {
-    "year": 2025
+    "venue": "NeurIPS",
+    "year": 2025,
+    "ccf": "A"
   },
   "T-427": {
     "venue": "KDD",
@@ -1673,7 +1679,9 @@
     "ccf": "A"
   },
   "T-443": {
-    "year": 2024
+    "venue": "IJCAI",
+    "year": 2024,
+    "ccf": "A"
   },
   "T-444": {
     "venue": "AAAI",
@@ -1681,13 +1689,19 @@
     "ccf": "A"
   },
   "T-445": {
-    "year": 2026
+    "venue": "ICDE",
+    "year": 2026,
+    "ccf": "A"
   },
   "T-446": {
-    "year": 2026
+    "venue": "ICDE",
+    "year": 2026,
+    "ccf": "A"
   },
   "T-447": {
-    "year": 2026
+    "venue": "ICDE",
+    "year": 2026,
+    "ccf": "A"
   },
   "T-448": {
     "year": 2020
@@ -1720,7 +1734,9 @@
     "ccf": "A"
   },
   "T-455": {
-    "year": 2026
+    "venue": "ICML",
+    "year": 2026,
+    "ccf": "A"
   },
   "T-456": {
     "venue": "IJCAI",
@@ -1733,7 +1749,9 @@
     "ccf": "A"
   },
   "T-458": {
-    "year": 2025
+    "venue": "NeurIPS",
+    "year": 2025,
+    "ccf": "A"
   },
   "T-459": {
     "venue": "VLDB",
@@ -1791,7 +1809,9 @@
     "year": 2026
   },
   "T-474": {
-    "year": 2026
+    "venue": "NeurIPS",
+    "year": 2026,
+    "ccf": "A"
   },
   "T-475": {
     "venue": "AAAI",
@@ -2088,13 +2108,17 @@
     "ccf": "A"
   },
   "T-LLM-2": {
-    "year": 2025
+    "venue": "ICLR",
+    "year": 2025,
+    "ccf": "A"
   },
   "T-LLM-3": {
     "year": 2024
   },
   "T-LLM-4": {
-    "year": 2024
+    "venue": "ICML",
+    "year": 2024,
+    "ccf": "A"
   },
   "T-LLM-5": {
     "venue": "NeurIPS",
@@ -2128,7 +2152,9 @@
     "year": 2025
   },
   "T-S-7": {
-    "year": 2025
+    "venue": "NeurIPS",
+    "year": 2025,
+    "ccf": "A"
   },
   "T-S-8": {
     "venue": "KDD",
@@ -2142,7 +2168,9 @@
     "year": 2024
   },
   "T-ZS-LLM-11": {
-    "year": 2023
+    "venue": "IJCAI",
+    "year": 2023,
+    "ccf": "A"
   },
   "T-ZS-LLM-12": {
     "venue": "KDD",

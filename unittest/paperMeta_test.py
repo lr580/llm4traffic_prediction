@@ -110,7 +110,48 @@ sub = base.flit(ccf=['A'], paper_meta=paper_meta, inner=False)
 CitationHandler.render(sub, formatter=Paper.display)
 check(all('\\cite{' not in r.model for r in base), 'flit(inner=False) 深拷贝，render 不串改原 Results')
 
-print('[5] 视图输出链路')
+print('[5] Zotero 子笔记录用事实兜底')
+from utils.baselines.ccfCatalog import match_venue
+
+def note_item(text, parent='P'):
+    return {'data': {'itemType': 'note', 'parentItem': parent, 'note': f'<p>{text}</p>'}}
+
+note_samples = (   # 覆盖 _notes() 支持的各种真实写法（docstring 只举 2 例，完整以本清单为准）
+    ('Comment: Accept by ICML 2026', 'ICML 2026'),
+    ('Accepted to NeurIPS 2026 (main conference)', 'NeurIPS 2026 (main conference)'),
+    ('Accepted by NeurIPS 2025 (Spotlight)', 'NeurIPS 2025 (Spotlight)'),
+    ('15 pages, 9 figures, accepted by ICDE 2026', 'ICDE 2026'),
+    ("to be published in the 42nd IEEE International Conference on Data Engineering (ICDE '26)",
+     "the 42nd IEEE International Conference on Data Engineering (ICDE '26)"),
+    ('To appear at ICLR 2018. 12 pages.', 'ICLR 2018'),
+    ('Published as a conference paper at ICLR 2017', 'ICLR 2017'),
+)
+for text, expected in note_samples:
+    got = CitationHandler.zotero._notes([note_item(text)]).get('P')
+    check(got == expected, f'note 提取 {text[:32]!r} -> {expected!r}')
+check(not CitationHandler.zotero._notes([note_item('11 pages, 3 figures')])
+      and not CitationHandler.zotero._notes([note_item('Under review in IEEE TITS')]),
+      '页数 / under review 等无录用语义的笔记不提取')
+workshop = CitationHandler.zotero._notes(
+    [note_item('Accepted at the ICML 2019 Workshop "Learning and Reasoning"')]).get('P')
+check(workshop and match_venue(workshop) is None, 'workshop 可提取但被 match_venue 反例否决')
+
+items = [
+    {'data': {'key': 'AAAA', 'itemType': 'conferencePaper', 'archiveLocation': 'T-460',
+              'date': '2025-07-13',
+              'proceedingsTitle': 'Proceedings of the 42nd International Conference on Machine Learning'}},
+    {'data': {'key': 'BBBB', 'itemType': 'preprint', 'archiveLocation': 'T-59',
+              'date': '2021-03-29', 'repository': 'arXiv'}},
+    {'data': {'key': 'CCCC', 'itemType': 'preprint', 'archiveLocation': 'T-455',
+              'date': '2026-05-19', 'repository': 'arXiv'}},
+    note_item(note_samples[0][0], 'CCCC'),
+]
+built = CitationHandler.zotero.build_papers(items)
+check(built['T-460'] == {'venue': 'ICML', 'year': 2025, 'ccf': 'A'}, '正式 venue 字段命中时优先')
+check(built['T-59'] == {'year': 2021}, 'arXiv 且无录用笔记时不写 venue/ccf')
+check(built['T-455'] == {'venue': 'ICML', 'year': 2026, 'ccf': 'A'}, '子笔记 Accept by 兜底 venue/ccf')
+
+print('[6] 视图输出链路')
 res = Results.get_baseline_results().flit(ccf=['A'], year_range=(2025, 2026), paper_meta=paper_meta, inner=False)
 res.flit(tags='2019', horizons=[-1])
 CitationHandler.render(res, formatter=Paper.display)
