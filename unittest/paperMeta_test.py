@@ -1,13 +1,13 @@
 '''论文元数据功能的回归验证（脚本式，不引入 pytest）。
 
 运行：python unittest/paperMeta_test.py
-依赖 papers.json 快照与代码内的 CCF_A_CATALOG 常量（离线可跑）。
+依赖 papers.json 快照与 ccfA/ccfB.json 目录数据（离线可跑）。
 '''
 import sys, os
 sys.path.append(os.path.abspath(os.path.join(os.getcwd())))
 import json
 from utils.baselines import Results, CitationHandler, Paper
-from utils.baselines.ccfCatalog import CCF_A_VENUES
+from utils.baselines.ccfCatalog import CCF_A_CATALOG
 from utils.common import pdDataFrame2str, bold_column_min_in_latex_table
 
 P = 'utils/baselines/'
@@ -21,7 +21,7 @@ def check(cond, msg):
 
 
 print('[1] 目录口径与数据契约')
-check('IJCAI' in CCF_A_VENUES, 'IJCAI 按项目口径为 A')
+check('IJCAI' in CCF_A_CATALOG, 'IJCAI 按项目口径为 A')
 check(all(set(v) <= {'venue', 'year', 'ccf'} for k, v in papers.items() if not k.startswith('_')),
       'papers.json 字段为三字段子集（空值省略）')
 check(all('unknown' not in v.values() and all(x != '' and x is not None for x in v.values())
@@ -39,7 +39,7 @@ gold = {
     'T-414':   {'venue': 'AAAI',  'year': 2026, 'ccf': 'A'},
     'T-456':   {'venue': 'IJCAI', 'year': 2026, 'ccf': 'A'},
     'T-LLM-1': {'venue': 'ICLR',  'year': 2024, 'ccf': 'A'},
-    'T-467':   {'year': 2026},  # arXiv 不在 A 类目录，venue/ccf 不写入
+    'T-467':   {'venue': 'arXiv', 'year': 2026},  # arXiv 兜底：venue=arXiv，ccf 留空
     'O-33':    {'venue': 'NeurIPS', 'year': 2014, 'ccf': 'A'},
 }
 for k, want in gold.items():
@@ -48,15 +48,15 @@ for k, want in gold.items():
 print('[3] 查表与 formatter')
 check(CitationHandler.meta(CitationHandler.cite_of_model('STGCN')) == {'venue': 'IJCAI', 'year': 2018, 'ccf': 'A'},
       'STGCN 经 cite_of_model -> meta 查到 IJCAI 2018')
-check(CitationHandler.meta('T-467') == {'venue': '', 'year': 2026, 'ccf': ''},
-      '快照省略的字段由 meta 补空串')
+check(CitationHandler.meta('T-467') == {'venue': 'arXiv', 'year': 2026, 'ccf': ''},
+      '快照省略的 ccf 字段由 meta 补空串')
 built = CitationHandler.zotero.build_papers([
     {'data': {'itemType': 'preprint', 'citationKey': 'T-空', 'repository': 'arXiv.org'}},
     {'data': {'itemType': 'conferencePaper', 'citationKey': 'T-满',
               'conferenceName': 'KDD', 'date': '2025'}},
 ])
-check(built['T-空'] == {} and built['T-满'] == {'venue': 'KDD', 'year': 2025, 'ccf': 'A'},
-      'build_papers 构建快照时只写非空字段')
+check(built['T-空'] == {'venue': 'arXiv'} and built['T-满'] == {'venue': 'KDD', 'year': 2025, 'ccf': 'A'},
+      'build_papers：arXiv 兜底只写 venue，正式命中写齐三字段')
 check(CitationHandler.meta('T-不存在的键') == {'venue': '', 'year': '', 'ccf': ''},
       '缺键返回空值三元组')
 saved = CitationHandler.paper_data
@@ -136,6 +136,24 @@ workshop = CitationHandler.zotero._notes(
     [note_item('Accepted at the ICML 2019 Workshop "Learning and Reasoning"')]).get('P')
 check(workshop and match_venue(workshop) is None, 'workshop 可提取但被 match_venue 反例否决')
 
+print('[5b] B 类目录与反例重审')
+from utils.baselines.ccfCatalog import CCF_A_CATALOG, CCF_B_CATALOG, CCF_LEVEL
+check(match_venue('IEEE International Conference on Data Mining') == 'ICDM' and CCF_LEVEL['ICDM'] == 'B',
+      'ICDM（原 ICDM 反例）现为 B 类正例')
+check(match_venue('Proceedings of the 31st ACM SIGKDD Conference on Knowledge Discovery and Data Mining V.1') == 'KDD'
+      and match_venue('SIGKDD') == 'KDD' and match_venue('IEEE Transactions on Knowledge and Data Engineering') == 'TKDE',
+      '会议全称（带前缀/届次/V.1）、简称、期刊名三种写法均命中')
+check(match_venue('IEEE International Conference on Data Engineering') == 'ICDE' and CCF_LEVEL['ICDE'] == 'A',
+      'ICDE 仍为 A，ICDM/ICDE 由第三步相似度 top1 区分')
+bad = [f'{short}->{match_venue(full)}'
+       for cat in (CCF_A_CATALOG, CCF_B_CATALOG)
+       for short, full in cat.items() if match_venue(full) != short]
+check(not bad, f'A/B 目录全称自匹配全部命中自身（{len(bad)} 个例外: {bad[:5]}）')
+for raw in ('IEEE International Conference on Reliability, Infocom Technologies and Optimization (ICRITO)',
+            'ICC 2020 - IEEE International Conference on Communications (ICC)',
+            'ACM Conferences', 'arXiv.org'):
+    check(match_venue(raw) is None, f'反例 / 非目录串不误判: {raw[:40]}...')
+
 items = [
     {'data': {'key': 'AAAA', 'itemType': 'conferencePaper', 'archiveLocation': 'T-460',
               'date': '2025-07-13',
@@ -148,7 +166,7 @@ items = [
 ]
 built = CitationHandler.zotero.build_papers(items)
 check(built['T-460'] == {'venue': 'ICML', 'year': 2025, 'ccf': 'A'}, '正式 venue 字段命中时优先')
-check(built['T-59'] == {'year': 2021}, 'arXiv 且无录用笔记时不写 venue/ccf')
+check(built['T-59'] == {'venue': 'arXiv', 'year': 2021}, 'arXiv 兜底写 venue=arXiv，ccf 留空')
 check(built['T-455'] == {'venue': 'ICML', 'year': 2026, 'ccf': 'A'}, '子笔记 Accept by 兜底 venue/ccf')
 
 print('[6] 视图输出链路')

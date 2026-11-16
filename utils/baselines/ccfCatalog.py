@@ -1,114 +1,52 @@
-'''CCF 目录与 venue 解析（纯代码常量，无数据文件依赖）。
+'''CCF 目录与 venue 解析：venue 匹配与 CCF 等级判定只认目录条目；arXiv 预印本的
+兜底不归本文件，由调用方 citations.py 在候选链之后按 repository 补 venue='arXiv'。
 
-CCF_A_CATALOG 是唯一的目录数据：缩写 -> 全称，判断是否 CCF-A 查 key 即可。
-运行时目录就是 CCF_A_CATALOG；不读取数据文件，也不读取 PDF。
+模块组成：
+    ccfA.json / ccfB.json           目录数据（同目录，离线可用，不读 PDF）
+    CCF_A_CATALOG / CCF_B_CATALOG   缩写 -> 全称，对应项目口径的 A / B 类
+    _CATALOG                        匹配用合并目录（键冲突 A 优先）
+    CCF_LEVEL                       缩写 -> 'A'/'B'，等级判定
+    match_venue()                   只认目录条目，arXiv 不在目录里，传进去返回 None
+
+数据口径（对照 CCF 第七版/2026）：
+    A 表：
+        - CCF 第七版 A 类会议/期刊
+        - 与第七版的差异：IJCAI 第七版降为 B，项目按 A 计
+    B 表：
+        - 第七版 B 类会议/期刊
+        - 同一缩写对应多个全称的（TCC/DCC/AAMAS/RE 同时挂会议和期刊），只存一个，
+          其余多对一放 VENUE_ALIASES
+        - 不含与 A 撞缩写的 ASE/CSCW/FSE/WWW（A 会议 vs B 期刊，保 A 口径优先）
 
 用法：
-    python -m utils.baselines.ccfCatalog  # 统计 Zotero 实际写法命中情况
+    python -m utils.baselines.ccfCatalog   # 统计 Zotero 实际写法命中情况
 '''
 from __future__ import annotations
+import json
 import re
 from difflib import SequenceMatcher
+from pathlib import Path
+
+HERE = Path(__file__).resolve().parent
 
 
-# ---------- 目录数据 ----------
-# CCF 第七版（2026）A 类目录：缩写 -> 全称。目录不会频繁变动，换版时整体替换本表。
-CCF_A_CATALOG = {
-    'AAAI': 'AAAIConferenceonArtificialIntelligence',
-    'ACL': 'AnnualMeetingoftheAssociationforComputational Linguistics',
-    'ACMMM': 'ACMInternationalConferenceonMultimedia',
-    'AI': 'ArtificialIntelligence',
-    'ASE': 'InternationalConferenceonAutomatedSoftwareEngineering',
-    'ASPLOS': 'InternationalConferenceonArchitecturalSupportfor ProgrammingLanguagesandOperatingSystems',
-    'Bioinformatics': 'Bioinformatics',
-    'CAV': 'InternationalConferenceonComputerAidedVerification',
-    'CCS': 'ACMConferenceonComputerandCommunications Security',
-    'CHI': 'ACMConferenceonHumanFactorsinComputing Systems',
-    'CRYPTO': 'InternationalCryptologyConference',
-    'CSCW': 'ACMConferenceOnComputer-SupportedCooperative WorkAndSocialComputing',
-    'CVPR': 'IEEE/CVFComputerVisionandPatternRecognition Conference',
-    'DAC': 'DesignAutomationConference',
-    'EUROCRYPT': 'InternationalConferenceontheTheoryandApplications of CryptographicTechniques',
-    'EuroSys': 'EuropeanConferenceonComputerSystems',
-    'FAST': 'USENIXConferenceonFileandStorageTechnologies',
-    'FM': 'InternationalSymposiumonFormalMethods',
-    'FOCS': 'IEEEAnnualSymposiumonFoundationsofComputer Science',
-    'FSE': 'ACMInternationalConferenceontheFoundationsof SoftwareEngineering',
-    'HPCA': 'IEEEInternationalSymposiumonHighPerformance ComputerArchitecture',
-    'HPDC': 'TheInternationalACMSymposiumonHigh-Performance ParallelandDistributedComputing',
-    'IANDC': 'InformationandComputation',
-    'ICCV': 'InternationalConferenceonComputerVision',
-    'ICDE': 'IEEEInternationalConferenceonDataEngineering',
-    'ICLR': 'InternationalConferenceonLearningRepresentations',
-    'ICML': 'InternationalConferenceonMachineLearning',
-    'ICSE': 'InternationalConferenceonSoftwareEngineering',
-    'IEEEVIS': 'IEEEVisualizationConference',
-    'IJCAI': 'InternationalJointConferenceonArtificialIntelligence',
-    'IJCV': 'InternationalJournalofComputerVision',
-    'IJHCS': 'InternationalJournalofHuman-ComputerStudies',
-    'INFOCOM': 'IEEEInternationalConferenceonComputerCommunications',
-    'ISCA': 'InternationalSymposiumonComputerArchitecture',
-    'ISSTA': 'InternationalSymposiumonSoftwareTestingandAnalysis',
-    'JACM': 'JournaloftheACM',
-    'JMLR': 'JournalofMachineLearningResearch',
-    'JSAC': 'IEEEJournalonSelectedAreasinCommunications',
-    'KDD': 'ACMSIGKDDConferenceonKnowledgeDiscoveryand DataMining',
-    'LICS': 'ACM/IEEESymposiumonLogicinComputerScience',
-    'MICRO': 'IEEE/ACMInternationalSymposiumonMicroarchitecture',
-    'MobiCom': 'ACMInternationalConferenceonMobileComputingand Networking',
-    'NDSS': 'NetworkandDistributedSystemSecuritySymposium',
-    'NSDI': 'SymposiumonNetworkSystemDesignandImplementation',
-    'NeurIPS': 'ConferenceonNeuralInformationProcessingSystems',
-    'OOPSLA': 'ConferenceonObject-OrientedProgrammingSystems, Languages,andApplications',
-    'OSDI': 'USENIXSymposiumonOperatingSystemsDesignand Implementation',
-    'PLDI': 'ACMSIGPLANConferenceonProgrammingLanguage DesignandImplementation',
-    'POPL': 'ACMSIGPLAN-SIGACTSymposiumonPrinciplesof ProgrammingLanguages',
-    'PPoPP': 'ACMSIGPLANSymposiumonPrinciples&Practiceof ParallelProgramming',
-    'RTSS': 'IEEEReal-TimeSystemsSymposium',
-    'SC': 'InternationalConferenceforHighPerformance Computing,Networking,Storage,andAnalysis',
-    'SCIS': 'ScienceChinaInformationSciences',
-    'SICOMP': 'SIAMJournalonComputing',
-    'SIGCOMM': 'ACMInternationalConferenceonApplications,Technologies, Architectures,andProtocolsforComputerCommunication',
-    'SIGGRAPH': 'ACMSpecialInterestGrouponComputerGraphics',
-    'SIGIR': 'InternationalACMSIGIRConferenceonResearchand DevelopmentinInformationRetrieval',
-    'SIGMOD': 'ACMSIGMODConference',
-    'SODA': 'ACM-SIAMSymposiumonDiscreteAlgorithms',
-    'SOSP': 'ACMSymposiumonOperatingSystemsPrinciples',
-    'STOC': 'ACMSymposiumontheTheoryofComputing',
-    'TACO': 'ACMTransactionsonArchitectureandCodeOptimization',
-    'TC': 'IEEETransactionsonComputers',
-    'TCAD': 'IEEETransactionsonComputer-AidedDesignofIntegrated CircuitsandSystems',
-    'TDSC': 'IEEETransactionsonDependableandSecureComputing',
-    'TIFS': 'IEEETransactionsonInformationForensicsandSecurity',
-    'TIP': 'IEEETransactionsonImageProcessing',
-    'TIT': 'IEEETransactionsonInformationTheory',
-    'TKDE': 'IEEETransactionsonKnowledgeandDataEngineering',
-    'TMC': 'IEEETransactionsonMobileComputing',
-    'TMM': 'IEEETransactionsonMultimedia',
-    'TOCHI': 'ACMTransactionsonComputer-HumanInteraction',
-    'TOCS': 'ACMTransactionsonComputerSystems',
-    'TODS': 'ACMTransactionsonDatabaseSystems',
-    'TOG': 'ACMTransactionsonGraphics',
-    'TOIS': 'ACMTransactionsonInformationSystems',
-    'TON': 'IEEETransactionsonNetworking',
-    'TOPLAS': 'ACMTransactionsonProgrammingLanguagesand Systems',
-    'TOS': 'ACMTransactionsonStorage',
-    'TOSEM': 'ACMTransactionsonSoftwareEngineeringand Methodology',
-    'TPAMI': 'IEEETransactionsonPatternAnalysisandMachine Intelligence',
-    'TPDS': 'IEEETransactionsonParallelandDistributedSystems',
-    'TSC': 'IEEETransactionsonServicesComputing',
-    'TSE': 'IEEETransactionsonSoftwareEngineering',
-    'TVCG': 'IEEETransactionsonVisualizationandComputer Graphics',
-    'UIST': 'ACMSymposiumonUserInterfaceSoftwareand Technology',
-    'USENIXSecurity': 'USENIXSecuritySymposium',
-    'UbiComp': 'ACMinternationaljointconferenceonPervasiveand UbiquitousComputing',
-    'VLDB': 'InternationalConferenceonVeryLargeDataBases',
-    'VLDBJ': 'TheVLDBJournal',
-    'VR': 'IEEEConferenceonVirtualRealityand3DUserInterfaces',
-    'WWW': 'TheWebConference',
-}
+def _load_catalog(filename) -> dict:
+    '''读取同目录的目录 JSON：{缩写: 全称}。
 
-CCF_A_VENUES = frozenset(CCF_A_CATALOG)
+    例：_load_catalog('ccfA.json')['ICML'] -> 'InternationalConferenceonMachineLearning'
+    '''
+    return json.loads((HERE / filename).read_text(encoding='utf-8'))
+
+
+CCF_A_CATALOG = _load_catalog('ccfA.json')
+CCF_B_CATALOG = _load_catalog('ccfB.json')
+
+# CCF_LEVEL：缩写 -> 等级（'A'/'B'），A/B 两表合成一张，citations.py 的 ccf 字段查这里
+assert not (set(CCF_A_CATALOG) & set(CCF_B_CATALOG)), '缩写同时出现在 A/B 目录，等级歧义，需人工消歧'
+CCF_LEVEL = {**{abbr: 'A' for abbr in CCF_A_CATALOG}, **{abbr: 'B' for abbr in CCF_B_CATALOG}}
+
+# 匹配用合并目录：B 在前、A 在后覆盖，键冲突时 A 优先（B 表已排除撞缩写条目，此序只作保险）。
+_CATALOG = {**CCF_B_CATALOG, **CCF_A_CATALOG}
 
 # ---------- Zotero 数据源 ----------
 # 本地 API 地址与 venue 字段优先级：citations.py 的 sync_from_zotero() 与
@@ -121,14 +59,41 @@ ZOTERO_API = 'http://127.0.0.1:23119/api/users/0/items'
 # 'Companion of the 2025 ...' 顶掉；T-ZS-LLM-6 / T-391 同类。
 VENUE_FIELDS = ['proceedingsTitle', 'conferenceName', 'publicationTitle', 'repository', 'series']
 
-# 人工别名：全称之外的匹配候选，第二、三步共用。
+# 人工别名：全称之外的匹配候选，第二、三步共用。A 类沿用原有；B 类补充
+# 同缩写双载体的另一全称（TCC/DCC/AAMAS/RE）与 Zotero 常见异写。
 VENUE_ALIASES = {
     'CVPR':   ['IEEE/CVF Conference on Computer Vision and Pattern Recognition',
                'IEEE Conference on Computer Vision and Pattern Recognition'],
     'IJCAI':  ['Proceedings of the Twenty-Eighth International Joint Conference on Artificial Intelligence, IJCAI 2019, Macao, China, August 10-16, 2019'],
     'KDD':    ['SIGKDD'],
+    # A 表第七版补录（2026-11，原项目裁掉的 4 条）：S&P 缩写含 '&' 无法词命中、
+    # USENIX ATC 第七版升 A 且更名（ACM SIGOPS ATC），两个全称都放别名兜住。
+    'S&P':    ['IEEE S&P'],
+    'USENIXATC': ['USENIX ATC', 'ACM SIGOPS Annual Technical Conference'],
+    # 注意：这条全称必须带空格写——normalize_venue 会剥掉 'Proceedings of the ' 前缀，
+    # 使其与查询串 'Proceedings of the IEEE' 同样归一为 'ieee' 后精确对齐；融合写法剥不掉前缀。
+    'Proc. IEEE': ['Proc IEEE'],
     'NeurIPS':['Advances in Neural Information Processing Systems', 'Neural Information Processing Systems'],
     'WWW':    ['ACM Web Conference', 'World Wide Web Conference'],
+    'TCC':    ['IEEE Transactions on Cloud Computing'],
+    'DCC':    ['Designs, Codes and Cryptography'],
+    'AAMAS':  ['Autonomous Agents and Multi-Agent Systems'],
+    'RE':     ['IEEE International Conference on Requirements Engineering'],
+    'ECML-PKDD': ['Machine Learning and Knowledge Discovery in Databases',
+                  'European Conference on Machine Learning and Knowledge Discovery in Databases'],
+    'EMNLP':  ['Empirical Methods in Natural Language Processing'],
+    'NAACL':  ['Annual Meeting of the North American Chapter of the Association for Computational Linguistics'],
+    'UAI':    ['Uncertainty in Artificial Intelligence'],
+    'COLT':   ['Annual Conference on Computational Learning Theory'],
+    'DASFAA': ['Database Systems for Advanced Applications'],          # Zotero 常缺 'International Conference on' 前缀
+    'TKDD':   ['ACM Trans. Knowl. Discov. Data'],                      # ACM 刊名缩写式
+    'JWS':    ['Web Semantics: Science, Services and Agents on the World Wide Web'],
+    'PLOS Computational Biology': ['PLoS Comput Biol'],
+    # 全称被其他 venue 名内嵌的条目：简称改放别名（词命中停用，第三步相似度兜住）。
+    'SIGGRAPH': ['ACM SIGGRAPH', 'SIGGRAPH'],
+    'GROUP':  ['GROUP'],
+    'Eurographics': ['Eurographics'],
+    'Performance': ['Performance'],
 }
 
 
@@ -152,33 +117,31 @@ def normalize_venue(raw) -> str:
 
 
 # ---------- 第一步（反例）----------
-'''与某 CCF-A 全称高度相似、但确定不是该 venue 的写法。
-归一化后命中任一反例子串的 raw 直接判 None（后两步都不再尝试）。
-背景：'IEEE International Conference on Data Mining' (ICDM, CCF-B) 与
-ICDE 全称仅差 'Mining/Engineering'，第三步相似度过阈值曾误判为 ICDE。'''
-VENUE_NEGATIVES = [
-    'IEEE International Conference on Data Mining',   # ICDM（含 ... Workshops 变体）
-    'Workshop',   # workshop 一律不算 CCF 目录正例（如 'ICML 2019 Workshop ...' 否则词命中 ICML）
-]
+'''确定不是目录条目的写法：归一化后命中任一反例子串直接 None（后两步不再尝试）。
 
-'''已知问题（2026-11 全库 632 篇实测，3 篇残余错误，均未进入 baselineResults.csv）：
-- T-ZS32  '...Reliability, Infocom Technologies and Optimization (ICRITO)' 误判 INFOCOM
-- T-96    'ICC 2020 - IEEE International Conference on Communications (ICC)' 误判 INFOCOM
-  两者同 ICDM 一个道理，修法：往本表补对应反例。
-- T-ZS-LLM-6  ACL-IJCNLP 2021 联合会议写法漏判（是否算 ACL-A 待定）。
-- match_venue('ACM Conferences') 误判 WWW（'acmconferences' vs 'acmwebconference'
-  相似度 0.867 过阈值）。当前无条目触发，但 ACM DL 抓取的 conferencePaper 常只填
-  series='ACM Conferences'，一旦出现即误判。修法：往本表补 'ACM Conferences' 反例。
-另：T-159 'Proc. ACM Manag. Data'（PACMMOD 卷）经确认非 SIGMOD 主会，正确返回 None。
+ICDM 原是反例（防吸附 ICDE），第七版归 B 后转正例、交第三步 top1 相似度区分；
+后三条是实库误判修复（详见 paperMeta_test [5b] 与扫描输出）：'ACM Conferences'
+0.867 相似误判 WWW，ICRITO 词命中 'infocom'、ICC 0.93 相似误判 INFOCOM。
+待定：T-ZS-LLM-6 的 ACL-IJCNLP 联合写法命中 ACL；T-159 PACMMOD 非 SIGMOD 主会（正确 None）。
 '''
+VENUE_NEGATIVES = [
+    'Workshop',   # workshop 一律不算目录正例（如 'ICML 2019 Workshop ...' 否则词命中 ICML）
+    'ACM Conferences',
+    'ICRITO',
+    'IEEE International Conference on Communications',
+]
 
 _NEGATIVES = [normalize_venue(n).replace(' ', '') for n in VENUE_NEGATIVES]   # 反例紧凑串
 
 
 # ---------- 第二步（词命中）----------
-# 通用简称匹配时跳过的通用词，避免 'Web' / 'Data' 之类误命中
+# 通用简称匹配时跳过的通用词，避免 'Web' / 'Data' 之类误命中。
+# 后 5 个是 B 类并入后新增：这些词出现在其他 venue 的全称里（如 HPDC / SC 全称含
+# 'Performance'，BIBM 全称含 'Bioinformatics'，I3D 全称含 'SIGGRAPH'），词命中会
+# 把人家的全称抢走；停用后靠第三步相似度（全称自匹配恒 1.0）正确归位。
 SHORT_STOPWORDS = {'the', 'and', 'for', 'web', 'data', 'ieee', 'acm', 'sig',
-                   'conference', 'journal', 'transactions', 'international', 'advances'}
+                   'conference', 'journal', 'transactions', 'international', 'advances',
+                   'performance', 'group', 'bioinformatics', 'eurographics', 'siggraph'}
 
 
 def _build_keyword_to_venues(catalog: dict, abbrs=None) -> dict:
@@ -200,13 +163,13 @@ def _build_keyword_to_venues(catalog: dict, abbrs=None) -> dict:
     return keyword_to_venues
 
 
-# 预计算：目录固定为 CCF_A_CATALOG，导入时算一次、全进程复用（模块即单例）。
-_KEYWORD_TO_VENUES = _build_keyword_to_venues(CCF_A_CATALOG, VENUE_ALIASES)
+# 预计算：目录 = 合并后的 _CATALOG，导入时算一次、全进程复用（模块即单例）。
+_KEYWORD_TO_VENUES = _build_keyword_to_venues(_CATALOG, VENUE_ALIASES)
 _TOKENS = sorted(_KEYWORD_TO_VENUES, key=len, reverse=True)   # 长 token 更特异，优先尝试（如 'sigkdd' 先于 'kdd'）
 
 
 # ---------- 第三步（相似度）----------
-MATCH_THRESHOLD = 0.85   # top1 最低相似度（实测正例 0.89~1.00，负例 <=0.77）
+MATCH_THRESHOLD = 0.85   # top1 最低相似度（A 类实测正例 0.89~1.00，负例 <=0.77；B 类扩充后需复核）
 
 
 def _build_venue_names(catalog: dict, aliases=None) -> dict:
@@ -229,7 +192,12 @@ def _build_venue_names(catalog: dict, aliases=None) -> dict:
     return venue_names
 
 
-_VENUE_NAMES = _build_venue_names(CCF_A_CATALOG, VENUE_ALIASES)
+_VENUE_NAMES = _build_venue_names(_CATALOG, VENUE_ALIASES)
+
+# 反例豁免集：目录官方名（含别名）本身含反例词的写法（NOSSDAV / CSFW 官方名含
+# 'Workshop'）。compact 串与之完全一致时跳过反例否决，避免自家全称被自家反例拦下；
+# 非 official 写法（如 'ICML 2019 Workshop ...'）不受豁免，照常否决。
+_NEGATIVE_EXEMPT = {c for cands in _VENUE_NAMES.values() for c in cands if any(n in c for n in _NEGATIVES)}
 
 
 # ---------- 匹配入口 ----------
@@ -238,24 +206,21 @@ _CACHE = {}   # 查询缓存：归一化串 -> 结果；Zotero 里写法重复�
 
 
 def match_venue(raw):
-    '''raw -> 匹配到的目录缩写；未命中（含空值 / None）返回 None。
+    '''raw -> 匹配到的目录缩写（A / B 合并查）；未命中（含空值 / None）返回 None。
 
     三步匹配，都先过 normalize_venue()（PDF 全称丢空格也能对齐）：
     第一步（反例）：命中 VENUE_NEGATIVES 子串直接 None；
     第二步（词命中）：串里完整包含某缩写 / 别名简称（词边界），直接返回该缩写；
     第三步（相似度）：与各缩写的名称写法（_VENUE_NAMES）比 SequenceMatcher
     相似度，最高分 top1 >= MATCH_THRESHOLD 才返回，否则 None。
+    等级不在本函数职责内，拿到缩写后查 CCF_LEVEL 即得 'A' / 'B'。
 
     raw 正常是 Zotero item 里取出的 venue 字段（proceedingsTitle / conferenceName / ...），
-    内部用 str(raw or '') 兜底，其它类型不保证语义。写法很不统一，例如：
-        会议全称   'Proceedings of the 31st ACM SIGKDD Conference on Knowledge Discovery and Data Mining V.1'
-        带届次地点 'Proceedings of the Twenty-Eighth International Joint Conference on Artificial Intelligence, IJCAI 2019, Macao, China, August 10-16, 2019'
-        期刊名     'IEEE Transactions on Knowledge and Data Engineering'
-        简称       'SIGKDD'
-        仓库名     'arXiv.org'
-        缺失       '' / None
-    前四例分别解析为 KDD / IJCAI / TKDE / KDD；'arXiv.org' 不在 A 类目录
-    返回 None，空值与无法解析的写法同样返回 None。
+    内部用 str(raw or '') 兜底，其它类型不保证语义。更多写法用例见 paperMeta_test.py [5b]。
+    例：
+        match_venue('Proceedings of the 31st ACM SIGKDD Conference on Knowledge Discovery and Data Mining V.1')
+            -> 'KDD'
+        match_venue('arXiv.org') -> None（arXiv 预印本的 venue 兜底在 citations.py，优先级低于子笔录用事实）
     '''
     if not str(raw or '').strip():
         return None
@@ -264,9 +229,10 @@ def match_venue(raw):
         return _CACHE[norm]
     result = None
     compact = norm.replace(' ', '')
-    # 第一步（反例）：命中反例子串直接 None——确定不是 CCF-A 的写法，无论后两步
-    # 多相似都不再尝试（防 'Data Mining' 吸附到 ICDE 之类）。
-    if not any(n in compact for n in _NEGATIVES):
+    # 第一步（反例）：命中反例子串直接 None——确定不是目录条目的写法，无论后两步
+    # 多相似都不再尝试（防 'ACM Conferences' 吸附到 WWW、ICC 吸附到 INFOCOM 之类）；
+    # 与官方名完全一致的串豁免（NOSSDAV / CSFW 官方名自带 'Workshop'）。
+    if compact in _NEGATIVE_EXEMPT or not any(n in compact for n in _NEGATIVES):
         # 第二步（词命中）：归一化串里出现完整的缩写 / 别名简称（词边界）。
         for token in _TOKENS:
             if re.search(r'\b' + re.escape(token) + r'\b', norm):
@@ -307,7 +273,7 @@ def scan_zotero_venues():
         raw = next((data.get(f) for f in VENUE_FIELDS if data.get(f)), '')
         short = match_venue(raw)
         if short:
-            hits[short] += 1
+            hits[f'{short}({CCF_LEVEL[short]})'] += 1   # 命中键带等级，便于核对 A/B 分布
         elif str(raw).strip():
             unresolved[str(raw)] += 1
     return dict(hits), [v for v, _ in unresolved.most_common(20)]

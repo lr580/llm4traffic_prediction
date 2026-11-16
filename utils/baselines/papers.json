@@ -6,9 +6,11 @@
     "year": 2022
   },
   "O-11": {
+    "venue": "arXiv",
     "year": 2014
   },
   "O-12": {
+    "venue": "arXiv",
     "year": 2015
   },
   "O-13": {
@@ -45,12 +47,16 @@
     "year": 2009
   },
   "O-2": {
-    "year": 1997
+    "venue": "Neural Computation",
+    "year": 1997,
+    "ccf": "B"
   },
   "O-20": {
+    "venue": "arXiv",
     "year": 2016
   },
   "O-21": {
+    "venue": "arXiv",
     "year": 2019
   },
   "O-22": {
@@ -64,6 +70,7 @@
     "ccf": "A"
   },
   "O-24": {
+    "venue": "arXiv",
     "year": 2021
   },
   "O-25": {
@@ -72,19 +79,25 @@
     "ccf": "A"
   },
   "O-27": {
+    "venue": "arXiv",
     "year": 2018
   },
   "O-28": {
+    "venue": "arXiv",
     "year": 2017
   },
   "O-29": {
     "year": 2021
   },
   "O-3": {
-    "year": 2000
+    "venue": "Neural Computation",
+    "year": 2000,
+    "ccf": "B"
   },
   "O-30": {
-    "year": 2017
+    "venue": "ICWS",
+    "year": 2017,
+    "ccf": "B"
   },
   "O-31": {
     "year": 2001
@@ -111,6 +124,7 @@
     "ccf": "A"
   },
   "O-37": {
+    "venue": "arXiv",
     "year": 2020
   },
   "O-38": {
@@ -138,7 +152,9 @@
     "ccf": "A"
   },
   "O-44": {
-    "year": 2021
+    "venue": "UAI",
+    "year": 2021,
+    "ccf": "B"
   },
   "O-45": {
     "year": 1998
@@ -149,6 +165,7 @@
     "ccf": "A"
   },
   "O-47": {
+    "venue": "arXiv",
     "year": 2023
   },
   "O-48": {
@@ -170,10 +187,13 @@
     "ccf": "A"
   },
   "O-51": {
+    "venue": "arXiv",
     "year": 2019
   },
   "O-52": {
-    "year": 2014
+    "venue": "EMNLP",
+    "year": 2014,
+    "ccf": "B"
   },
   "O-53": {
     "venue": "AAAI",
@@ -186,6 +206,7 @@
     "ccf": "A"
   },
   "O-55": {
+    "venue": "arXiv",
     "year": 2024
   },
   "O-56": {
@@ -214,7 +235,9 @@
     "year": 2019
   },
   "O-62": {
-    "year": 2011
+    "venue": "Information Sciences",
+    "year": 2011,
+    "ccf": "B"
   },
   "O-64": {
     "year": 1970
@@ -228,13 +251,16 @@
     "ccf": "A"
   },
   "O-67": {
+    "venue": "arXiv",
     "year": 2025
   },
   "O-68": {
     "year": 2024
   },
   "O-7": {
-    "year": 2021
+    "venue": "TNNLS",
+    "year": 2021,
+    "ccf": "B"
   },
   "O-8": {
     "venue": "TKDE",
@@ -251,28 +277,38 @@
     "year": 2003
   },
   "T-100": {
-    "year": 2019
+    "venue": "ICDM",
+    "year": 2019,
+    "ccf": "B"
   },
   "T-101": {
     "year": 2020
   },
   "T-102": {
-    "year": 2021
+    "venue": "TITS",
+    "year": 2021,
+    "ccf": "B"
   },
   "T-103": {
     "year": 2020
   },
   "T-104": {
-    "year": 2020
+    "venue": "CIKM",
+    "year": 2020,
+    "ccf": "B"
   },
   "T-105": {
     "year": 2020
   },
   "T-106": {
-    "year": 2020
+    "venue": "DASFAA",
+    "year": 2020,
+    "ccf": "B"
   },
   "T-107": {
-    "year": 2020
+    "venue": "CIKM",
+    "year": 2020,
+    "ccf": "B"
   },
   "T-108": {
     "year": 2020
@@ -305,9 +341,11 @@
     "year": 2020
   },
   "T-115": {
+    "venue": "arXiv",
     "year": 2020
   },
   "T-116": {
+    "venue": "arXiv",
     "year": 2020
   },
   "T-117": {
@@ -320,6 +358,7 @@
     "year": 2018
   },
   "T-12": {
+    "venue": "arXiv",
     "year": 2019
   },
   "T-120": {
@@ -332,7 +371,9 @@
     "year": 2018
   },
   "T-123": {
-    "year": 2019
+    "venue": "TITS",
+    "year": 2019,
+    "ccf": "B"
   },
   "T-124": {
     "venue": "AAAI",
@@ -360,19 +401,25 @@
     "year": 1993
   },
   "T-130": {
+    "venue": "arXiv",
     "year": 2019
   },
   "T-131": {
     "year": 2021
   },
   "T-132": {
+    "venue": "arXiv",
     "year": 2022
   },
   "T-133": {
-    "year": 2024
+    "venue": "Neural Networks",
+    "year": 2024,
+    "ccf": "B"
   },
   "T-134": {
-    "year": 2023
+    "venue": "TKDD",
+    "year": 2023,
+    "ccf": "B"
   },
   "T-135": {
     "venue": "IJCAI",
@@ -395,7 +442,9 @@
     "ccf": "A"
   },
   "T-139": {
-    "year": 2023
+    "venue": "CIKM",
+    "year": 2023,
+    "ccf": "B"
   },
   "T-14": {
     "year": 2005
@@ -442,24 +491,31 @@
     "ccf": "A"
   },
   "T-149": {
-    "year": 2021
+    "venue": "TITS",
+    "year": 2021,
+    "ccf": "B"
   },
   "T-15": {
     "year": 2006
   },
   "T-150": {
-    "year": 2023
+    "venue": "PR",
+    "year": 2023,
+    "ccf": "B"
   },
   "T-151": {
+    "venue": "arXiv",
     "year": 2024
   },
   "T-152": {
     "year": 2023
   },
   "T-153": {
+    "venue": "arXiv",
     "year": 2024
   },
   "T-154": {
+    "venue": "arXiv",
     "year": 2024
   },
   "T-155": {
@@ -471,9 +527,11 @@
     "year": 2023
   },
   "T-157": {
+    "venue": "arXiv",
     "year": 2022
   },
   "T-158": {
+    "venue": "arXiv",
     "year": 2024
   },
   "T-159": {
@@ -483,10 +541,13 @@
     "year": 2005
   },
   "T-160": {
+    "venue": "arXiv",
     "year": 2019
   },
   "T-161": {
-    "year": 2022
+    "venue": "CIKM",
+    "year": 2022,
+    "ccf": "B"
   },
   "T-162": {
     "venue": "AAAI",
@@ -494,15 +555,20 @@
     "ccf": "A"
   },
   "T-163": {
+    "venue": "arXiv",
     "year": 2024
   },
   "T-164": {
-    "year": 2023
+    "venue": "CIKM",
+    "year": 2023,
+    "ccf": "B"
   },
   "T-165": {
+    "venue": "arXiv",
     "year": 2021
   },
   "T-166": {
+    "venue": "arXiv",
     "year": 2020
   },
   "T-167": {
@@ -515,10 +581,14 @@
     "year": 2021
   },
   "T-17": {
-    "year": 2012
+    "venue": "TITS",
+    "year": 2012,
+    "ccf": "B"
   },
   "T-170": {
-    "year": 2006
+    "venue": "TITS",
+    "year": 2006,
+    "ccf": "B"
   },
   "T-171": {
     "year": 1993
@@ -535,13 +605,19 @@
     "year": 2020
   },
   "T-175": {
-    "year": 2022
+    "venue": "TITS",
+    "year": 2022,
+    "ccf": "B"
   },
   "T-176": {
-    "year": 2022
+    "venue": "TITS",
+    "year": 2022,
+    "ccf": "B"
   },
   "T-177": {
-    "year": 2020
+    "venue": "TITS",
+    "year": 2020,
+    "ccf": "B"
   },
   "T-178": {
     "venue": "AI",
@@ -567,10 +643,14 @@
     "year": 2022
   },
   "T-184": {
-    "year": 2023
+    "venue": "TITS",
+    "year": 2023,
+    "ccf": "B"
   },
   "T-185": {
-    "year": 2021
+    "venue": "TITS",
+    "year": 2021,
+    "ccf": "B"
   },
   "T-186": {
     "year": 2022
@@ -579,7 +659,9 @@
     "year": 2021
   },
   "T-188": {
-    "year": 2021
+    "venue": "TITS",
+    "year": 2021,
+    "ccf": "B"
   },
   "T-189": {
     "year": 2020
@@ -599,12 +681,15 @@
     "ccf": "A"
   },
   "T-193": {
-    "year": 2021
+    "venue": "CIKM",
+    "year": 2021,
+    "ccf": "B"
   },
   "T-194": {
     "year": 2022
   },
   "T-195": {
+    "venue": "arXiv",
     "year": 2022
   },
   "T-196": {
@@ -620,7 +705,9 @@
     "year": 2022
   },
   "T-2": {
-    "year": 2014
+    "venue": "TITS",
+    "year": 2014,
+    "ccf": "B"
   },
   "T-20": {
     "year": 2016
@@ -632,7 +719,9 @@
     "year": 2021
   },
   "T-202": {
-    "year": 2022
+    "venue": "TITS",
+    "year": 2022,
+    "ccf": "B"
   },
   "T-203": {
     "venue": "TKDE",
@@ -645,7 +734,9 @@
     "ccf": "A"
   },
   "T-205": {
-    "year": 2021
+    "venue": "ECML-PKDD",
+    "year": 2021,
+    "ccf": "B"
   },
   "T-206": {
     "venue": "TPAMI",
@@ -658,6 +749,7 @@
     "ccf": "A"
   },
   "T-208": {
+    "venue": "arXiv",
     "year": 2019
   },
   "T-209": {
@@ -680,7 +772,9 @@
     "year": 2019
   },
   "T-213": {
-    "year": 2021
+    "venue": "Information Sciences",
+    "year": 2021,
+    "ccf": "B"
   },
   "T-214": {
     "year": 2020
@@ -689,16 +783,22 @@
     "year": 2020
   },
   "T-216": {
-    "year": 2018
+    "venue": "ICDM",
+    "year": 2018,
+    "ccf": "B"
   },
   "T-217": {
-    "year": 2020
+    "venue": "ICDM",
+    "year": 2020,
+    "ccf": "B"
   },
   "T-218": {
     "year": 2021
   },
   "T-219": {
-    "year": 2020
+    "venue": "CIKM",
+    "year": 2020,
+    "ccf": "B"
   },
   "T-22": {
     "year": 2007
@@ -719,7 +819,9 @@
     "year": 2021
   },
   "T-225": {
-    "year": 2022
+    "venue": "TITS",
+    "year": 2022,
+    "ccf": "B"
   },
   "T-226": {
     "year": 2022
@@ -745,7 +847,9 @@
     "year": 2022
   },
   "T-232": {
-    "year": 2023
+    "venue": "GeoInformatica",
+    "year": 2023,
+    "ccf": "B"
   },
   "T-233": {
     "venue": "AAAI",
@@ -761,13 +865,17 @@
     "year": 2022
   },
   "T-236": {
-    "year": 2024
+    "venue": "TITS",
+    "year": 2024,
+    "ccf": "B"
   },
   "T-237": {
     "year": 2022
   },
   "T-238": {
-    "year": 2022
+    "venue": "Neural Networks",
+    "year": 2022,
+    "ccf": "B"
   },
   "T-239": {
     "venue": "AAAI",
@@ -792,7 +900,9 @@
     "year": 2022
   },
   "T-244": {
-    "year": 2022
+    "venue": "TITS",
+    "year": 2022,
+    "ccf": "B"
   },
   "T-245": {
     "year": 2023
@@ -809,16 +919,22 @@
     "year": 2021
   },
   "T-249": {
-    "year": 2023
+    "venue": "DASFAA",
+    "year": 2023,
+    "ccf": "B"
   },
   "T-25": {
     "year": 2015
   },
   "T-250": {
-    "year": 2023
+    "venue": "DASFAA",
+    "year": 2023,
+    "ccf": "B"
   },
   "T-251": {
-    "year": 2023
+    "venue": "ICASSP",
+    "year": 2023,
+    "ccf": "B"
   },
   "T-252": {
     "venue": "ICDE",
@@ -849,31 +965,47 @@
     "year": 2022
   },
   "T-258": {
-    "year": 2022
+    "venue": "CIKM",
+    "year": 2022,
+    "ccf": "B"
   },
   "T-259": {
-    "year": 2022
+    "venue": "CIKM",
+    "year": 2022,
+    "ccf": "B"
   },
   "T-26": {
     "year": 2017
   },
   "T-260": {
-    "year": 2022
+    "venue": "CIKM",
+    "year": 2022,
+    "ccf": "B"
   },
   "T-261": {
-    "year": 2022
+    "venue": "CIKM",
+    "year": 2022,
+    "ccf": "B"
   },
   "T-262": {
-    "year": 2022
+    "venue": "DASFAA",
+    "year": 2022,
+    "ccf": "B"
   },
   "T-263": {
-    "year": 2022
+    "venue": "DASFAA",
+    "year": 2022,
+    "ccf": "B"
   },
   "T-264": {
-    "year": 2022
+    "venue": "ICASSP",
+    "year": 2022,
+    "ccf": "B"
   },
   "T-265": {
-    "year": 2022
+    "venue": "ICASSP",
+    "year": 2022,
+    "ccf": "B"
   },
   "T-266": {
     "venue": "ICDE",
@@ -886,19 +1018,27 @@
     "ccf": "A"
   },
   "T-268": {
-    "year": 2022
+    "venue": "ICDM",
+    "year": 2022,
+    "ccf": "B"
   },
   "T-269": {
-    "year": 2022
+    "venue": "ICDM",
+    "year": 2022,
+    "ccf": "B"
   },
   "T-27": {
     "year": 2016
   },
   "T-270": {
-    "year": 2022
+    "venue": "ICDM",
+    "year": 2022,
+    "ccf": "B"
   },
   "T-271": {
-    "year": 2022
+    "venue": "ICDM",
+    "year": 2022,
+    "ccf": "B"
   },
   "T-272": {
     "venue": "IJCAI",
@@ -959,10 +1099,14 @@
     "ccf": "A"
   },
   "T-283": {
-    "year": 2022
+    "venue": "WSDM",
+    "year": 2022,
+    "ccf": "B"
   },
   "T-284": {
-    "year": 2022
+    "venue": "WSDM",
+    "year": 2022,
+    "ccf": "B"
   },
   "T-285": {
     "venue": "WWW",
@@ -1043,6 +1187,7 @@
     "ccf": "A"
   },
   "T-3": {
+    "venue": "arXiv",
     "year": 2016
   },
   "T-300": {
@@ -1201,25 +1346,39 @@
     "year": 2017
   },
   "T-330": {
-    "year": 2023
+    "venue": "TITS",
+    "year": 2023,
+    "ccf": "B"
   },
   "T-331": {
-    "year": 2023
+    "venue": "TITS",
+    "year": 2023,
+    "ccf": "B"
   },
   "T-332": {
-    "year": 2023
+    "venue": "TITS",
+    "year": 2023,
+    "ccf": "B"
   },
   "T-333": {
-    "year": 2023
+    "venue": "TITS",
+    "year": 2023,
+    "ccf": "B"
   },
   "T-334": {
-    "year": 2023
+    "venue": "TITS",
+    "year": 2023,
+    "ccf": "B"
   },
   "T-335": {
-    "year": 2023
+    "venue": "TITS",
+    "year": 2023,
+    "ccf": "B"
   },
   "T-336": {
-    "year": 2023
+    "venue": "TKDD",
+    "year": 2023,
+    "ccf": "B"
   },
   "T-337": {
     "venue": "TKDE",
@@ -1280,28 +1439,42 @@
     "ccf": "A"
   },
   "T-348": {
-    "year": 2023
+    "venue": "TKDD",
+    "year": 2023,
+    "ccf": "B"
   },
   "T-349": {
-    "year": 2023
+    "venue": "TKDD",
+    "year": 2023,
+    "ccf": "B"
   },
   "T-35": {
     "year": 2017
   },
   "T-350": {
-    "year": 2023
+    "venue": "TKDD",
+    "year": 2023,
+    "ccf": "B"
   },
   "T-351": {
-    "year": 2021
+    "venue": "TKDD",
+    "year": 2021,
+    "ccf": "B"
   },
   "T-352": {
-    "year": 2021
+    "venue": "TKDD",
+    "year": 2021,
+    "ccf": "B"
   },
   "T-353": {
-    "year": 2021
+    "venue": "TKDD",
+    "year": 2021,
+    "ccf": "B"
   },
   "T-354": {
-    "year": 2021
+    "venue": "TKDD",
+    "year": 2021,
+    "ccf": "B"
   },
   "T-355": {
     "venue": "TKDE",
@@ -1319,13 +1492,19 @@
     "ccf": "A"
   },
   "T-358": {
-    "year": 2020
+    "venue": "TKDD",
+    "year": 2020,
+    "ccf": "B"
   },
   "T-359": {
-    "year": 2019
+    "venue": "TKDD",
+    "year": 2019,
+    "ccf": "B"
   },
   "T-36": {
-    "year": 2020
+    "venue": "TITS",
+    "year": 2020,
+    "ccf": "B"
   },
   "T-360": {
     "venue": "TMC",
@@ -1393,12 +1572,15 @@
     "ccf": "A"
   },
   "T-376": {
-    "year": 2022
+    "venue": "CIKM",
+    "year": 2022,
+    "ccf": "B"
   },
   "T-377": {
     "year": 2019
   },
   "T-378": {
+    "venue": "arXiv",
     "year": 2024
   },
   "T-379": {
@@ -1430,7 +1612,9 @@
     "ccf": "A"
   },
   "T-384": {
-    "year": 2023
+    "venue": "WSDM",
+    "year": 2023,
+    "ccf": "B"
   },
   "T-385": {
     "year": 2023
@@ -1441,7 +1625,9 @@
     "ccf": "A"
   },
   "T-387": {
-    "year": 2021
+    "venue": "CIKM",
+    "year": 2021,
+    "ccf": "B"
   },
   "T-388": {
     "year": 2024
@@ -1450,7 +1636,9 @@
     "year": 2024
   },
   "T-39": {
-    "year": 2020
+    "venue": "TITS",
+    "year": 2020,
+    "ccf": "B"
   },
   "T-390": {
     "year": 2024
@@ -1462,21 +1650,26 @@
     "year": 2021
   },
   "T-393": {
+    "venue": "arXiv",
     "year": 2024
   },
   "T-394": {
+    "venue": "arXiv",
     "year": 2024
   },
   "T-395": {
+    "venue": "arXiv",
     "year": 2024
   },
   "T-396": {
     "year": 2024
   },
   "T-397": {
+    "venue": "arXiv",
     "year": 2024
   },
   "T-398": {
+    "venue": "arXiv",
     "year": 2024
   },
   "T-399": {
@@ -1494,6 +1687,7 @@
     "year": 2025
   },
   "T-402": {
+    "venue": "arXiv",
     "year": 2025
   },
   "T-403": {
@@ -1517,13 +1711,17 @@
     "ccf": "A"
   },
   "T-407": {
+    "venue": "arXiv",
     "year": 2024
   },
   "T-408": {
+    "venue": "arXiv",
     "year": 2024
   },
   "T-409": {
-    "year": 2025
+    "venue": "TITS",
+    "year": 2025,
+    "ccf": "B"
   },
   "T-41": {
     "venue": "KDD",
@@ -1544,6 +1742,7 @@
     "ccf": "A"
   },
   "T-413": {
+    "venue": "arXiv",
     "year": 2023
   },
   "T-414": {
@@ -1572,12 +1771,16 @@
     "year": 2019
   },
   "T-420": {
-    "year": 2024
+    "venue": "ICDM",
+    "year": 2024,
+    "ccf": "B"
   },
   "T-421": {
+    "venue": "arXiv",
     "year": 2024
   },
   "T-422": {
+    "venue": "arXiv",
     "year": 2025
   },
   "T-423": {
@@ -1586,9 +1789,11 @@
     "ccf": "A"
   },
   "T-424": {
+    "venue": "arXiv",
     "year": 2025
   },
   "T-425": {
+    "venue": "arXiv",
     "year": 2024
   },
   "T-426": {
@@ -1671,6 +1876,7 @@
     "year": 2026
   },
   "T-441": {
+    "venue": "arXiv",
     "year": 2025
   },
   "T-442": {
@@ -1704,16 +1910,21 @@
     "ccf": "A"
   },
   "T-448": {
+    "venue": "arXiv",
     "year": 2020
   },
   "T-449": {
-    "year": 2022
+    "venue": "TITS",
+    "year": 2022,
+    "ccf": "B"
   },
   "T-45": {
     "year": 2020
   },
   "T-450": {
-    "year": 2025
+    "venue": "TKDD",
+    "year": 2025,
+    "ccf": "B"
   },
   "T-451": {
     "year": 2025
@@ -1772,12 +1983,14 @@
     "ccf": "A"
   },
   "T-462": {
+    "venue": "arXiv",
     "year": 2026
   },
   "T-463": {
     "year": 2026
   },
   "T-464": {
+    "venue": "arXiv",
     "year": 2025
   },
   "T-465": {
@@ -1786,9 +1999,12 @@
     "ccf": "A"
   },
   "T-466": {
-    "year": 2025
+    "venue": "CIKM",
+    "year": 2025,
+    "ccf": "B"
   },
   "T-467": {
+    "venue": "arXiv",
     "year": 2026
   },
   "T-468": {
@@ -1797,12 +2013,15 @@
     "ccf": "A"
   },
   "T-469": {
-    "year": 2027
+    "venue": "Neural Networks",
+    "year": 2027,
+    "ccf": "B"
   },
   "T-470": {
     "year": 2026
   },
   "T-471": {
+    "venue": "arXiv",
     "year": 2026
   },
   "T-472": {
@@ -1890,7 +2109,9 @@
     "ccf": "A"
   },
   "T-49": {
-    "year": 2016
+    "venue": "ICDM",
+    "year": 2016,
+    "ccf": "B"
   },
   "T-490": {
     "venue": "WWW",
@@ -1906,6 +2127,7 @@
     "year": 2025
   },
   "T-5": {
+    "venue": "arXiv",
     "year": 2017
   },
   "T-50": {
@@ -1923,18 +2145,22 @@
     "year": 2018
   },
   "T-54": {
-    "year": 2015
+    "venue": "TITS",
+    "year": 2015,
+    "ccf": "B"
   },
   "T-55": {
     "year": 2016
   },
   "T-56": {
+    "venue": "arXiv",
     "year": 2018
   },
   "T-58": {
     "year": 2019
   },
   "T-59": {
+    "venue": "arXiv",
     "year": 2021
   },
   "T-6": {
@@ -1944,7 +2170,9 @@
     "year": 2018
   },
   "T-61": {
-    "year": 2019
+    "venue": "TITS",
+    "year": 2019,
+    "ccf": "B"
   },
   "T-62": {
     "year": 2019
@@ -1958,7 +2186,9 @@
     "ccf": "A"
   },
   "T-65": {
-    "year": 2021
+    "venue": "TNNLS",
+    "year": 2021,
+    "ccf": "B"
   },
   "T-66": {
     "year": 2020
@@ -1970,7 +2200,9 @@
     "year": 2021
   },
   "T-69": {
-    "year": 2021
+    "venue": "TITS",
+    "year": 2021,
+    "ccf": "B"
   },
   "T-7": {
     "year": 1980
@@ -1991,15 +2223,19 @@
     "year": 2020
   },
   "T-75": {
+    "venue": "arXiv",
     "year": 2020
   },
   "T-76": {
     "year": 2020
   },
   "T-77": {
-    "year": 2020
+    "venue": "DASFAA",
+    "year": 2020,
+    "ccf": "B"
   },
   "T-78": {
+    "venue": "arXiv",
     "year": 2019
   },
   "T-79": {
@@ -2022,15 +2258,21 @@
     "ccf": "A"
   },
   "T-83": {
-    "year": 2021
+    "venue": "TITS",
+    "year": 2021,
+    "ccf": "B"
   },
   "T-84": {
-    "year": 2022
+    "venue": "TITS",
+    "year": 2022,
+    "ccf": "B"
   },
   "T-85": {
+    "venue": "arXiv",
     "year": 2021
   },
   "T-86": {
+    "venue": "arXiv",
     "year": 2019
   },
   "T-87": {
@@ -2039,6 +2281,7 @@
     "ccf": "A"
   },
   "T-88": {
+    "venue": "arXiv",
     "year": 2018
   },
   "T-89": {
@@ -2053,7 +2296,9 @@
     "year": 2020
   },
   "T-91": {
-    "year": 2020
+    "venue": "SECON",
+    "year": 2020,
+    "ccf": "B"
   },
   "T-92": {
     "venue": "AAAI",
@@ -2072,14 +2317,13 @@
     "year": 2020
   },
   "T-96": {
-    "venue": "INFOCOM",
-    "year": 2020,
-    "ccf": "A"
+    "year": 2020
   },
   "T-97": {
     "year": 2010
   },
   "T-98": {
+    "venue": "arXiv",
     "year": 2018
   },
   "T-99": {
@@ -2113,6 +2357,7 @@
     "ccf": "A"
   },
   "T-LLM-3": {
+    "venue": "arXiv",
     "year": 2024
   },
   "T-LLM-4": {
@@ -2131,18 +2376,23 @@
     "ccf": "A"
   },
   "T-S-1": {
+    "venue": "arXiv",
     "year": 2023
   },
   "T-S-10": {
+    "venue": "arXiv",
     "year": 2025
   },
   "T-S-2": {
+    "venue": "arXiv",
     "year": 2025
   },
   "T-S-3": {
+    "venue": "arXiv",
     "year": 2024
   },
   "T-S-4": {
+    "venue": "arXiv",
     "year": 2025
   },
   "T-S-5": {
@@ -2165,6 +2415,7 @@
     "year": 2025
   },
   "T-ZS-LLM-1": {
+    "venue": "arXiv",
     "year": 2024
   },
   "T-ZS-LLM-11": {
@@ -2178,6 +2429,7 @@
     "ccf": "A"
   },
   "T-ZS-LLM-13": {
+    "venue": "arXiv",
     "year": 2024
   },
   "T-ZS-LLM-14": {
@@ -2190,15 +2442,20 @@
     "year": 2025
   },
   "T-ZS-LLM-2": {
+    "venue": "arXiv",
     "year": 2023
   },
   "T-ZS-LLM-3": {
-    "year": 2025
+    "venue": "TITS",
+    "year": 2025,
+    "ccf": "B"
   },
   "T-ZS-LLM-4": {
+    "venue": "arXiv",
     "year": 2025
   },
   "T-ZS-LLM-5": {
+    "venue": "arXiv",
     "year": 2025
   },
   "T-ZS-LLM-6": {
@@ -2221,7 +2478,9 @@
     "ccf": "A"
   },
   "T-ZS10": {
-    "year": 2020
+    "venue": "CN",
+    "year": 2020,
+    "ccf": "B"
   },
   "T-ZS11": {
     "year": 2020
@@ -2233,15 +2492,19 @@
     "year": 2021
   },
   "T-ZS14": {
+    "venue": "arXiv",
     "year": 2021
   },
   "T-ZS15": {
-    "year": 2022
+    "venue": "TITS",
+    "year": 2022,
+    "ccf": "B"
   },
   "T-ZS16": {
     "year": 2019
   },
   "T-ZS17": {
+    "venue": "arXiv",
     "year": 2018
   },
   "T-ZS18": {
@@ -2254,10 +2517,14 @@
     "year": 2022
   },
   "T-ZS20": {
-    "year": 2022
+    "venue": "TITS",
+    "year": 2022,
+    "ccf": "B"
   },
   "T-ZS21": {
-    "year": 2022
+    "venue": "TITS",
+    "year": 2022,
+    "ccf": "B"
   },
   "T-ZS22": {
     "year": 2020
@@ -2284,15 +2551,17 @@
     "year": 2023
   },
   "T-ZS30": {
-    "year": 2024
+    "venue": "DSE",
+    "year": 2024,
+    "ccf": "B"
   },
   "T-ZS31": {
-    "year": 2021
+    "venue": "CIKM",
+    "year": 2021,
+    "ccf": "B"
   },
   "T-ZS32": {
-    "venue": "INFOCOM",
-    "year": 2024,
-    "ccf": "A"
+    "year": 2024
   },
   "T-ZS33": {
     "year": 2024
@@ -2319,6 +2588,7 @@
     "year": 2018
   },
   "T-ZS40": {
+    "venue": "arXiv",
     "year": 2024
   },
   "T-ZS41": {
@@ -2328,9 +2598,12 @@
     "year": 2022
   },
   "T-ZS43": {
-    "year": 2023
+    "venue": "TITS",
+    "year": 2023,
+    "ccf": "B"
   },
   "T-ZS45": {
+    "venue": "arXiv",
     "year": 2023
   },
   "T-ZS46": {
@@ -2339,16 +2612,22 @@
     "ccf": "A"
   },
   "T-ZS47": {
+    "venue": "arXiv",
     "year": 2024
   },
   "T-ZS48": {
-    "year": 2021
+    "venue": "DSE",
+    "year": 2021,
+    "ccf": "B"
   },
   "T-ZS49": {
+    "venue": "arXiv",
     "year": 2025
   },
   "T-ZS5": {
-    "year": 2019
+    "venue": "TITS",
+    "year": 2019,
+    "ccf": "B"
   },
   "T-ZS50": {
     "year": 2021
@@ -2372,7 +2651,9 @@
     "year": 2020
   },
   "T-ZS57": {
-    "year": 2013
+    "venue": "TITS",
+    "year": 2013,
+    "ccf": "B"
   },
   "T-ZS58": {
     "year": 2021
@@ -2384,7 +2665,9 @@
     "year": 2011
   },
   "T-ZS60": {
-    "year": 2026
+    "venue": "DSE",
+    "year": 2026,
+    "ccf": "B"
   },
   "T-ZS7": {
     "year": 2018
@@ -2393,6 +2676,8 @@
     "year": 2004
   },
   "T-ZS9": {
-    "year": 2020
+    "venue": "CN",
+    "year": 2020,
+    "ccf": "B"
   }
 }

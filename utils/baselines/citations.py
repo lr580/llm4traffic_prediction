@@ -2,7 +2,7 @@
 
 citations.json : 模型名 -> 引用键（保持原样，是 model 到论文的唯一映射）
 papers.json    : 引用键 -> 元数据快照（空值字段省略），由 sync_from_zotero() 写出
-CCF_A_CATALOG  : 缩写 -> 全称（ccfCatalog.py 代码常量），用于判断 CCF-A 与 venue 匹配
+CCF_LEVEL      : 缩写 -> 'A'/'B'（ccfCatalog.py，目录数据在同目录 ccfA/ccfB.json），venue 匹配与等级判定
 ZoteroHandler  : 本文件内的 Zotero API 拉取与条目解析，由 CitationHandler 组合持有
 Paper          : results.py 的论文条目 dataclass；paper() 查表构建，render(Paper.display) 按其显示名渲染
 
@@ -15,7 +15,7 @@ from pathlib import Path
 from typing import Callable
 
 from .results import Paper, Results
-from .ccfCatalog import CCF_A_VENUES, VENUE_FIELDS, ZOTERO_API, match_venue
+from .ccfCatalog import CCF_LEVEL, VENUE_FIELDS, ZOTERO_API, match_venue, normalize_venue
 
 HERE = Path(__file__).resolve().parent
 PAPERS_PATH = HERE / 'papers.json'
@@ -117,10 +117,12 @@ class ZoteroHandler:
              - 引用键取 archiveLocation，其次 citationKey，只认 'T-' / 'O-' 前缀
              - 两字段都有效但不一致时仍取 archiveLocation，只记 conflicts
           2. venue / ccf
-             - 候选链：VENUE_FIELDS 中第一个非空字段 -> 子笔记录用串，依次交给 match_venue()
-             - 命中 A 类目录写 venue 缩写和 ccf='A'；都判不出则两字段留空
-             - 未命中的非空候选串计入 unresolved
-             - 预印本与正式论文一视同仁，字段能命中就判 A
+             2.1 候选链：VENUE_FIELDS 中第一个非空字段 -> 子笔记录用串，依次交给 match_venue()
+                 - 命中目录写 venue 缩写；未命中的非空候选串计入 unresolved
+                 - 预印本与正式论文一视同仁，字段能命中就按等级判
+             2.2 arXiv 兜底：候选链全未命中且 repository 是 arXiv -> venue='arXiv'，ccf 留空
+                 - 子笔录用事实优先于 arXiv 兜底
+             - ccf 按 CCF_LEVEL 写 'A' / 'B'；都判不出则 ccf 留空
           3. year：date 中第一个 19xx/20xx 年份；date 非空但取不到记 badDates
           4. 写表：同键后写覆盖并记 duplicateKeys
 
@@ -139,6 +141,10 @@ class ZoteroHandler:
                 {'data': {'itemType': 'note', 'parentItem': 'b2',
                           'note': 'Comment: Accept by ICML 2026'}}
                 -> {'T-455': {'venue': 'ICML', 'year': 2026, 'ccf': 'A'}}
+            arXiv 兜底（候选链全未命中）：
+                {'data': {'key': 'c3', 'itemType': 'preprint', 'archiveLocation': 'T-467',
+                          'repository': 'arXiv'}}
+                -> {'T-467': {'venue': 'arXiv'}}
         '''
         papers, unresolved = {}, set()
         conflicts, bad_dates, duplicates = 0, 0, 0
@@ -155,7 +161,7 @@ class ZoteroHandler:
             if conflict:
                 conflicts += 1
 
-            # (2) venue 候选链：正式字段原文优先，子笔记录用事实（'Comment: Accept by ICML 2026'）兜底
+            # (2.1) venue 候选链：正式字段原文优先，子笔记录用事实（'Comment: Accept by ICML 2026'）兜底
             candidates = (
                 next((data.get(f) for f in VENUE_FIELDS if data.get(f)), ''),   # 正式字段原文
                 notes.get(data.get('key', ''), ''),                            # 子笔记录用事实
@@ -167,8 +173,12 @@ class ZoteroHandler:
                 if short:
                     break
                 unresolved.add(cand)   # 未命中串计入统计
+            # (2.2) arXiv 兜底：候选链（含子笔记事实）全未命中且仓库为 arXiv -> venue='arXiv'，
+            # ccf 留空。必须在候选链之后：'Comment: Accept by ICML 2026' 的事实要优先于预印本身份。
             venue = short or ''
-            ccf = 'A' if short in CCF_A_VENUES else ''
+            if not venue and 'arxiv' in normalize_venue(data.get('repository')):
+                venue = 'arXiv'
+            ccf = CCF_LEVEL.get(short, '')
 
             # (3) 年份：解析 date，取不到记 badDates
             year = self._year(data.get('date'))
