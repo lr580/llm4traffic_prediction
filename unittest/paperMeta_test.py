@@ -6,7 +6,7 @@
 import sys, os
 sys.path.append(os.path.abspath(os.path.join(os.getcwd())))
 import json
-from utils.baselines import Results, CitationHandler
+from utils.baselines import Results, CitationHandler, Paper
 from utils.baselines.ccfCatalog import CCF_A_VENUES
 from utils.common import pdDataFrame2str, bold_column_min_in_latex_table
 
@@ -67,52 +67,54 @@ check(CitationHandler.meta('K') == {'venue': 'KDD', 'year': '', 'ccf': ''},
 check(CitationHandler.meta('N') == {'venue': '', 'year': '', 'ccf': ''},
       'JSON 写 null 同样归一为空串')
 CitationHandler.paper_data = saved
-check(CitationHandler.paperFormatter('X', '', {}) == 'X'
-      and CitationHandler.paperFormatter('X', '', {'venue': 'KDD', 'year': ''}) == 'X',
-      'venue/year 缺失时原样返回')
-check(CitationHandler.meta(CitationHandler.cite_of_model('ARIMA', {'ARIMA': 'O-64'}))['year'] != '',
+st = CitationHandler.paper('STGCN')
+check((st.model, st.cite, st.venue, st.year, st.ccf) == ('STGCN', 'T-28', 'IJCAI', 2018, 'A'),
+      'paper 一次查齐引用键与元数据，year 为 int')
+check(CitationHandler.paper('HA').unknown()
+      and CitationHandler.paper('不存在的模型').year is None,
+      '无元数据 / 缺键时字段留空且 unknown() 成立')
+check(CitationHandler.paper('X', {'X': ''}).display() == 'X'
+      and Paper('X', cite='', venue='KDD').display() == 'X',
+      'venue/year 缺失时显示名原样返回')
+check(CitationHandler.paper('ARIMA', {'ARIMA': 'O-64'}).year is not None,
       'externalCite 临时补键可查到元数据')
-c_st = CitationHandler.cite_of_model('STGCN')
-c_ha = CitationHandler.cite_of_model('HA')
-check(CitationHandler.paperFormatter('STGCN', c_st, CitationHandler.meta(c_st)) == 'STGCN (IJCAI 2018)'
-      and CitationHandler.paperFormatter('HA', c_ha, CitationHandler.meta(c_ha)) == 'HA',
-      'paperFormatter 只对已知 venue/year 加标注')
-fmt = CitationHandler.paperCiteFormatter
-composed = fmt('STGCN', 'T-28', CitationHandler.meta('T-28'))
-check(composed == 'STGCN (IJCAI 2018) \\cite{T-28}', 'paperCiteFormatter 同时加标注和引用')
+check(CitationHandler.paper('STGCN').display(withCite=False) == 'STGCN (IJCAI 2018)'
+      and CitationHandler.paper('HA').display() == 'HA',
+      'display 只对已知 venue/year 加标注')
+check(CitationHandler.paper('STGCN').display() == 'STGCN (IJCAI 2018) \\cite{T-28}',
+      'display 默认同时加标注和引用')
 
 print('[4] flit 元数据筛选与深拷贝')
 all_res = Results.get_baseline_results()
-paper_meta = {r.model: CitationHandler.meta(CitationHandler.cite_of_model(r.model)) for r in all_res}
-check(len(all_res) == 700, 'baselineResults.csv 仍为 700 行')
+paper_meta = {r.model: CitationHandler.paper(r.model) for r in all_res}
+check(len(all_res) > 0, f'结果集非空（baselineResults.csv 当前 {len(all_res)} 行，不硬编码行数）')
 plain = all_res.flit(inner=False)
 check(0 < len(plain) <= len(all_res), '不带元数据条件时按 flit 默认实验条件筛')
 res_a = all_res.flit(ccf=['A'], paper_meta=paper_meta, inner=False)
-check(len(res_a) > 0 and all(CitationHandler.meta(CitationHandler.cite_of_model(r.model))['ccf'] == 'A' for r in res_a),
+check(len(res_a) > 0 and all(CitationHandler.paper(r.model).ccf == 'A' for r in res_a),
       f'ccf=[A] 筛出 {len(res_a)} 行且全部为 A')
 res_y = all_res.flit(year_range=(2025, 2026), paper_meta=paper_meta, inner=False)
-check(all(2025 <= CitationHandler.meta(CitationHandler.cite_of_model(r.model))['year'] <= 2026 for r in res_y),
+check(all(2025 <= CitationHandler.paper(r.model).year <= 2026 for r in res_y),
       f'year_range=(2025,2026) 筛出 {len(res_y)} 行且年份全在区间内')
 res_v = all_res.flit(venues=['KDD'], paper_meta=paper_meta, inner=False)
-check(all(CitationHandler.meta(CitationHandler.cite_of_model(r.model))['venue'] == 'KDD' for r in res_v),
+check(all(CitationHandler.paper(r.model).venue == 'KDD' for r in res_v),
       f'venues=[KDD] 筛出 {len(res_v)} 行且 venue 全匹配')
 check(not any(r.model == 'HA' for r in res_a), '默认排除 13 个无引用键模型')
 res_u = all_res.flit(ccf=['A'], include_unknown=True, paper_meta=paper_meta, inner=False)
 check(any(r.model == 'HA' for r in res_u), 'include_unknown 保留 HA 等三字段皆空的对照基线')
 base = Results.get_baseline_results()
 sub = base.flit(ccf=['A'], paper_meta=paper_meta, inner=False)
-CitationHandler.render(sub)
+CitationHandler.render(sub, formatter=Paper.display)
 check(all('\\cite{' not in r.model for r in base), 'flit(inner=False) 深拷贝，render 不串改原 Results')
 
 print('[5] 视图输出链路')
 res = Results.get_baseline_results().flit(ccf=['A'], year_range=(2025, 2026), paper_meta=paper_meta, inner=False)
 res.flit(tags='2019', horizons=[-1])
+CitationHandler.render(res, formatter=Paper.display)
 df = res.dataset_view(['SD', 'GBA', 'GLA', 'CA'])
-cite_of = {m: CitationHandler.cite_of_model(m) for m in df.index}
-df = df.rename(index={m: fmt(m, c, CitationHandler.meta(c)) for m, c in cite_of.items()})
 tex = pdDataFrame2str(df, prefix='')
 check(any('(' in str(i) for i in df.index), '显示名落在 df.index，不新增文本列')
-check('\\cite{' in tex, 'citeFormatter 的引用注入进入 LaTeX 输出')
+check('\\cite{' in tex, '引用注入进入 LaTeX 输出')
 check(len(bold_column_min_in_latex_table(tex)) > 0, 'bold_column_min_in_latex_table 仍可处理')
 
 print('全部通过')

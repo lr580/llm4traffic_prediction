@@ -4,14 +4,16 @@
     python main.py --format latex                   # 输出 LaTeX 表格行
     python main.py --format latex --output table.tex
     python main.py --output table.xlsx             # 写出完整 Excel 表格
-    python main.py --case PEMS0x --no-cite
+    python main.py --case PEMS0x --name-style plain  # 不渲染模型名
+    python main.py --ccf-a --year 2025 2026        # 只保留 CCF-A 且 2025~2026 年发表的模型
+    python main.py --name-style paper --format latex  # 模型名渲染为 Model (VENUE YEAR) + 引用键
 '''
 from __future__ import annotations
 
 import argparse
 from pathlib import Path
 
-from utils.baselines import Results, CitationHandler
+from utils.baselines import Results, CitationHandler, Paper
 
 ROOT = Path(__file__).resolve().parent
 BASELINES_DIR = ROOT / 'utils' / 'baselines'
@@ -22,14 +24,14 @@ CASES = {
         datasets=['SD', 'GBA', 'GLA', 'CA'],
         sort_by=('SD', 'mae'),
         bold_min=True,
-        cite=True,
+        name_style='cite',
     ),
     'PEMS0x': dict(
         filter=dict(datasets=[f'PEMS0{x}' for x in '3478'], horizons=[-1], tags='survey'),
         datasets=[f'PEMS0{x}' for x in '3478'],
         sort_by=('PEMS03', 'mae'),
         bold_min=False,
-        cite=True,
+        name_style='cite',
         externalCite={'ARIMA': 'O-64', 'VAR': 'O-65', 'SVR': 'O-66'},
         printSOTA=True,
     ),
@@ -41,20 +43,34 @@ CASES = {
         datasets=['SD', 'GBA', 'GLA', 'CA'],
         sort_by=('SD', 'mae'),
         bold_min=True,
-        cite=False,
+        name_style='plain',
     ),
 }
 
 
-def run_baseline_view(case: str, fmt: str = 'df', output: str = '-', cite: bool = None) -> str:
+def run_baseline_view(case: str, fmt: str = 'df', output: str = '-',
+                      ccf_a: bool = False, year_range: tuple = None, name_style: str = None) -> str:
     cfg = CASES[case]
     results = Results.get_baseline_results()
-    results.flit(**cfg['filter'])
+    extCite = cfg.get('externalCite', {})
+    # {model: Paper}；externalCite 让临时补键模型（如 PEMS0x 的 ARIMA）也能查到元数据
+    paper_meta = {r.model: CitationHandler.paper(r.model, extCite) for r in results}
+
+    filter_cfg = dict(cfg['filter'])
+    if ccf_a:
+        filter_cfg['ccf'] = ['A']
+    if year_range is not None:
+        filter_cfg['year_range'] = year_range
+    if ccf_a or year_range is not None:
+        filter_cfg['paper_meta'] = paper_meta
+    results.flit(**filter_cfg)
     if cfg.get('merge_csv'):
         results = Results.merge(results, Results.from_csv(str(cfg['merge_csv'])))
-    use_cite = cfg.get('cite', False) if cite is None else cite
-    if use_cite:
-        CitationHandler.render(results, externalCite=cfg.get('externalCite', {}))
+    style = name_style or cfg.get('name_style', 'plain')
+    if style == 'cite':                     # Model \cite{T-xxx}（render 默认 formatter）
+        CitationHandler.render(results, externalCite=extCite)
+    elif style == 'paper':                  # Model (VENUE YEAR) \cite{T-xxx}；venue/year 缺失自动降级
+        CitationHandler.render(results, formatter=Paper.display, externalCite=extCite)
     if cfg.get('printSOTA'):
         results.printSOTA()
 
@@ -85,13 +101,18 @@ def main(argv=None):
     parser.add_argument('--case', choices=CASES, default='LargeST', help='结果场景，默认 LargeST')
     parser.add_argument('--format', choices=['df', 'latex'], default='df',
                         help='输出内容，默认 df（打印 DataFrame）；latex 输出 LaTeX 表格行')
-    parser.add_argument('--cite', dest='cite', action='store_true', default=None,
-                        help='给模型名注入 LaTeX 引用')
-    parser.add_argument('--no-cite', dest='cite', action='store_false', default=None,
-                        help='不注入引用；不指定时按 case 默认配置')
     parser.add_argument('--output', default='-', help='输出文件；- 表示标准输出')
+    parser.add_argument('--ccf-a', action='store_true',
+                        help='只保留发表于 CCF-A 的论文对应的模型（无引用键模型默认剔除）')
+    parser.add_argument('--year', nargs=2, type=int, metavar=('START', 'END'), default=None,
+                        help='只保留论文发表年份在区间内的模型，如 --year 2025 2026')
+    parser.add_argument('--name-style', dest='name_style', choices=['plain', 'cite', 'paper'], default=None,
+                        help=r'模型名渲染：plain 原样 / cite 注入 \cite / paper 加 (VENUE YEAR) 标注；'
+                             '默认按场景配置')
     args = parser.parse_args(argv)
-    run_baseline_view(args.case, args.format, args.output, args.cite)
+    run_baseline_view(args.case, args.format, args.output,
+                      ccf_a=args.ccf_a, year_range=tuple(args.year) if args.year else None,
+                      name_style=args.name_style)
 
 
 if __name__ == '__main__':

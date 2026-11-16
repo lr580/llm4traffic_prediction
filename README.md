@@ -16,7 +16,10 @@
 - `--case {LargeST,PEMS0x,v3}` 切换场景
 - `--format latex` 改为输出 LaTeX 表格行，`--output table.tex` 写文本文件
 - 默认 df 格式下 `--output table.xlsx` 写出完整 Excel 表格（终端预览会截断，文件不会）
-- `--cite` / `--no-cite` 控制是否给模型名注入引用（默认按场景配置）
+- `--name-style {plain,cite,paper}` 模型名渲染：`plain` 原样 / `cite` 注入引用键 / `paper` 显示为 `Model (VENUE YEAR)` 再注入引用键，venue/year 缺失时自动降级（默认按场景配置）
+- `--ccf-a` 只保留发表于 CCF-A 的论文对应的模型
+- `--year START END` 只保留论文发表年份在区间内的模型，如 `--year 2025 2026`
+- `--ccf-a` / `--year` 均基于 `papers.json` 元数据快照筛选，可与任意场景、输出格式组合
 
 数据集 `data/`
 
@@ -47,9 +50,11 @@
 - `baselines/` 基准模型
 
   - `HA.py`，历史平均值，不同节点、不同时间片、星期的三维度的平均值用作预测
-  - `results.py` 对基准模型结果进行多角度展示对比等
-  - `citations.py` 维护 LaTeX 引用，给结果注入引用
+  - `results.py` 对基准模型结果进行多角度展示对比等；`Paper` dataclass 聚合模型名 / 引用键 / venue / 年份 / CCF 等级，`flit` 支持按论文元数据筛选
+  - `citations.py` 维护 LaTeX 引用，给结果注入引用；`paper()` 一次查表构建 `Paper`，`render` 配合 `Paper.display` 按显示名渲染
   - `citations.json` 可自行更换的模型->引用映射表
+  - `papers.json` 论文元数据快照（引用键 -> venue/year/CCF，空值字段省略），由 `CitationHandler.sync_from_zotero()` 从本地 Zotero API 分页拉取生成；运行时只读快照，Zotero 不可用或返回空结果时不会覆盖
+  - `ccfCatalog.py` CCF-A 目录常量与 venue 三步匹配（反例 / 词命中 / 相似度），可 `python -m utils.baselines.ccfCatalog` 统计 Zotero 命中情况
   - `baselineResults.csv` 部分经典基准模型结果
   - `rawResultParser.py` 辅助中间函数，解析论文原始表格结果数据
   - `rawResults.py` 一些论文文本原始结果

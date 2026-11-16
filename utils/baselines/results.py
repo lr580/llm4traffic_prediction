@@ -10,6 +10,47 @@ import pandas as pd
 from pathlib import Path
 
 @dataclass
+class Paper:
+    '''模型对应的论文条目：模型名、引用键与元数据；快照查不到的字段留空。
+
+    纯数据类，由 citations.CitationHandler.paper() 查表构建，本模块不依赖 citations。
+    '''
+    model: str
+    '''模型名'''
+
+    cite: str = ''
+    '''引用键，如 'T-28'；无引用键的基线模型（如 HA）为空'''
+
+    venue: str = ''
+    '''venue 缩写（CCF 目录口径），如 'IJCAI'；未知为空'''
+
+    year: int | None = None
+    '''发表年份；未知为 None'''
+
+    ccf: str = ''
+    '''CCF 等级，如 'A'；未知为空'''
+
+    def unknown(self) -> bool:
+        '''识别 HA / OLS 等不来自任何论文的对照基线（三字段皆空）：筛选时默认剔除，include_unknown=True 时保留作对照。'''
+        return not (self.venue or self.year or self.ccf)
+
+    def display(self, withCite: bool = True) -> str:
+        '''显示名：Model (VENUE YEAR) \\cite{T-xxx}；标注与引用各自缺失时跳过。
+
+        例：Paper('STGCN', 'T-28', 'IJCAI', 2018, 'A').display() -> 'STGCN (IJCAI 2018) \\cite{T-28}'
+            Paper('HA').display()                            -> 'HA'
+        '''
+        name = f'{self.model} ({self.venue} {self.year})' if self.venue and self.year else self.model
+        return f'{name} \\cite{{{self.cite}}}' if withCite and self.cite else name
+
+    def display_cite(self) -> str:
+        '''cite 风格显示名：Model \\cite{T-xxx}；无引用键原样返回。
+
+        与 display 的区别：不加 (VENUE YEAR) 标注，只注入引用。
+        '''
+        return f'{self.model} \\cite{{{self.cite}}}' if self.cite else self.model
+
+@dataclass
 class Result:
     '''包含了构成基准模型结果；实际上也可以是自己跑的模型的结果'''
     model: str
@@ -70,20 +111,19 @@ class Result:
     def horizon_satisfy(self, horizons: int):
         return (len(horizons) == 0 and self.horizon == -1) or (self.horizon in horizons)
     
-    def paper_satisfy(self, meta: dict, ccf: list, venues: list, year_range: tuple | None,
+    def paper_satisfy(self, paper: Paper, ccf: list, venues: list, year_range: tuple | None,
                       include_unknown: bool = False):
         '''论文元数据条件；不带条件恒 True，三字段皆空按 include_unknown 决定。'''
         if not (ccf or venues or year_range is not None):
             return True
-        if not any(meta.values()):
+        if paper.unknown():
             return include_unknown
-        if ccf and meta['ccf'] not in ccf:
+        if ccf and paper.ccf not in ccf:
             return False
-        if venues and meta['venue'] not in venues:
+        if venues and paper.venue not in venues:
             return False
         if year_range is not None:
-            y = meta['year']
-            return isinstance(y, int) and year_range[0] <= y <= year_range[1]
+            return isinstance(paper.year, int) and year_range[0] <= paper.year <= year_range[1]
         return True
     
 @dataclass
@@ -192,9 +232,10 @@ class Results:
         '''唯一的筛选入口：实验条件之外，也可按论文元数据 ccf / venues / year_range 筛。
 
         论文条件由 Result.paper_satisfy 判定；元数据由调用方经 paper_meta 传入
-        （{model: {venue, year, ccf}}），本模块不查表、不依赖 citations。
-        带论文条件时不传 paper_meta 则各模型元数据视为空；不带论文条件时不需要它，
-        行为与旧版 flit 完全一致，即仍套用默认实验条件（split='6:2:2'、horizons=[] 只看 horizon=-1）。
+        （{model: Paper}，缺键视为全空的 Paper），本模块不查表、不依赖 citations。
+        带论文条件但不传 paper_meta 时各模型元数据视为空，默认会被全部剔除；
+        不带论文条件时不需要它，行为与旧版 flit 完全一致，
+        即仍套用默认实验条件（split='6:2:2'、horizons=[] 只看 horizon=-1）。
         inner=False 返回深拷贝的新 Results，render 就地改写 model 不会串改原集合。
         '''
         results = []
@@ -206,7 +247,8 @@ class Results:
                 ok = False
             if not (result.model_satisfy(models) and result.horizon_satisfy(horizons)):
                 ok = False
-            if not result.paper_satisfy(paper_meta.get(result.model, {}), ccf, venues, year_range, include_unknown):
+            if not result.paper_satisfy(paper_meta.get(result.model, Paper(result.model)),
+                                        ccf, venues, year_range, include_unknown):
                 ok = False
             if ok:
                 results.append(result)

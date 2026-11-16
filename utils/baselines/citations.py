@@ -4,6 +4,7 @@ citations.json : 模型名 -> 引用键（保持原样，是 model 到论文的�
 papers.json    : 引用键 -> 元数据快照（空值字段省略），由 sync_from_zotero() 写出
 CCF_A_CATALOG  : 缩写 -> 全称（ccfCatalog.py 代码常量），用于判断 CCF-A 与 venue 匹配
 ZoteroHandler  : 本文件内的 Zotero API 拉取与条目解析，由 CitationHandler 组合持有
+Paper          : results.py 的论文条目 dataclass；paper() 查表构建，render(Paper.display) 按其显示名渲染
 
 运行时默认只读快照，sync_from_zotero 需显式调用；不查论文元数据时输出与旧链路完全一致。
 '''
@@ -13,9 +14,7 @@ import re
 from pathlib import Path
 from typing import Callable
 
-import requests
-
-from .results import Results
+from .results import Paper, Results
 from .ccfCatalog import CCF_A_VENUES, VENUE_FIELDS, ZOTERO_API, match_venue
 
 HERE = Path(__file__).resolve().parent
@@ -36,15 +35,23 @@ class ZoteroHandler:
         self.api = api
 
     def fetch_items(self, timeout: float = 3, limit: int = 100, max_pages: int = 50):
-        '''分页拉全量 Zotero item；API 异常统一抛 RuntimeError。'''
+        '''分页拉全量 Zotero item；网络异常 / 非 200 / 非列表响应统一抛 RuntimeError。
+
+        requests 延迟导入：离线只读快照的主链路（main.py 等）不因此强依赖该第三方包。
+        '''
+        import requests
         items = []
         for page in range(max_pages):
             try:
-                batch = requests.get(self.api, params={'limit': limit, 'start': page * limit},
-                                     timeout=timeout).json()
+                resp = requests.get(self.api, params={'limit': limit, 'start': page * limit},
+                                    timeout=timeout)
+                resp.raise_for_status()
+                batch = resp.json()
             except Exception as e:
-                raise RuntimeError(str(e)) from e
-            if not isinstance(batch, list) or not batch:
+                raise RuntimeError(f'Zotero 请求失败：{e}') from e
+            if not isinstance(batch, list):
+                raise RuntimeError(f'Zotero 响应不是列表（疑似 API 报错）：{str(batch)[:120]}')
+            if not batch:
                 break
             items.extend(batch)
         return items
@@ -176,7 +183,7 @@ class CitationHandler:
     paper_data = None
 
     @staticmethod
-    def init():
+    def init_cites():
         if CitationHandler.citation_data is not None:
             return
         try:
@@ -202,34 +209,22 @@ class CitationHandler:
             CitationHandler.paper_data = json.load(f)
 
     @staticmethod
-    def latexFormatter(model: str, cite: str):
-        return f"{model} \\cite{{{cite}}}"
+    def render(results: Results, formatter: Callable[[Paper], str] = Paper.display_cite,
+               defaultCite: str = '', externalCite: dict = None):
+        ''' 就地修改一个 Results 对象，把每个模型名替换成 formatter(Paper) 的显示名。
 
-    @staticmethod
-    def normalFormatter(model: str, cite: str):
-        return f"{cite} ({model})"
-
-    @staticmethod
-    def render(results: Results, formatter: Callable[[str, str], str] = latexFormatter, defaultCite: str = '', externalCite: dict = {}):
-        ''' 就地修改一个 Results 对象，把每个模型名替换成模型名+引用名，替换格式为 formatter
-
+        每个模型经 paper(model, externalCite) 查成 Paper 再交给 formatter；
+        默认 Paper.display_cite 为 cite 风格，paper 风格传 Paper.display。
         例：res = Results.get_baseline_results()
-            render(res) 后 Result.model: 'STSGCN' -> 'STSGCN \\cite{T-87}'（默认 latexFormatter），返回 res 本身
-            render(res, formatter=normalFormatter) 后 Result.model: 'STSGCN' -> 'T-87 (STSGCN)'
+            render(res) 后 Result.model: 'STSGCN' -> 'STSGCN \\cite{T-87}'，返回 res 本身
+            render(res, formatter=Paper.display) 后 'STGCN' -> 'STGCN (IJCAI 2018) \\cite{T-28}'，HA 原样
             render(res, defaultCite='T-138') -> 无引用键的 'HA' 也标成 'HA \\cite{T-138}'
         '''
-        CitationHandler.init()
-        map = CitationHandler.citation_data | externalCite
-        assert map is not None
         for result in results: # result是引用，就地修改
-            model = result.model
-            if model in map:
-                cite = map[model]
-            elif defaultCite:
-                cite = defaultCite
-            else:
-                continue
-            result.model = formatter(model, cite)
+            info = CitationHandler.paper(result.model, externalCite)
+            if not info.cite and defaultCite:
+                info = Paper(model=info.model, cite=defaultCite)
+            result.model = formatter(info)
         return results
 
     # ---------- 论文元数据：查表 ----------
@@ -253,49 +248,34 @@ class CitationHandler:
             cite_of_model('HA')                       -> ''
             cite_of_model('ARIMA', {'ARIMA': 'O-64'}) -> 'O-64'
         '''
-        CitationHandler.init()
+        CitationHandler.init_cites()
         return (CitationHandler.citation_data | (externalCite or {})).get(model, '')
 
     @staticmethod
-    def paperFormatter(model: str, cite: str, meta: dict):
-        '''元数据标注：Model (KDD 2025)；venue/year 缺失时原样返回。
+    def paper(model: str, externalCite: dict | None = None) -> Paper:
+        '''模型名 -> Paper：引用键与元数据一次查齐；缺键 / 缺字段 / null 一律留空。
 
-        空字符串 / None / 缺字段都算缺失，不加标注。
-        例：paperFormatter('STGCN', 'T-28', meta('T-28')) -> 'STGCN (IJCAI 2018)'
-            paperFormatter('HA', '', meta(''))             -> 'HA'
-            paperFormatter('X', '', {})                    -> 'X'（不存字段即未知）
+        例：paper('STGCN') -> Paper('STGCN', 'T-28', 'IJCAI', 2018, 'A')
+            paper('HA')    -> Paper('HA')（无引用键、无元数据，unknown() 成立）
+            paper('ARIMA', {'ARIMA': 'O-64'}) -> cite='O-64'，元数据按该键查
         '''
-        venue, year = meta.get('venue'), meta.get('year')
-        if not venue or not year:
-            return model
-        return f'{model} ({venue} {year})'
-
-    @staticmethod
-    def citeFormatter(model: str, cite: str):
-        '''引用注入：Model \\cite{T-xxx}。
-
-        例：citeFormatter('STGCN', 'T-28') -> 'STGCN \\cite{T-28}'
-            citeFormatter('HA', '')        -> 'HA'（无引用键原样返回）
-        '''
-        return f'{model} \\cite{{{cite}}}' if cite else model
-
-    @staticmethod
-    def paperCiteFormatter(model: str, cite: str, meta: dict):
-        '''显示名 = 元数据标注 + 引用注入；两项各自独立判断，缺失时跳过。
-
-        例：paperCiteFormatter('STGCN', 'T-28', meta('T-28'))
-                -> 'STGCN (IJCAI 2018) \\cite{T-28}'
-            paperCiteFormatter('HA', '', meta('')) -> 'HA'
-        '''
-        model = CitationHandler.paperFormatter(model, cite, meta)
-        return CitationHandler.citeFormatter(model, cite)
+        CitationHandler.init_cites()
+        CitationHandler.init_papers()
+        cite = (CitationHandler.citation_data | (externalCite or {})).get(model, '')
+        raw = CitationHandler.paper_data.get(cite) or {}
+        year = raw.get('year')
+        return Paper(model=model, cite=cite,
+                     venue=raw.get('venue') or '',
+                     year=year if isinstance(year, int) else None,
+                     ccf=raw.get('ccf') or '')
 
     # ---------- 论文元数据：从 Zotero 构建快照（委托 ZoteroHandler） ----------
 
     @staticmethod
     def sync_from_zotero(out_path=None, timeout: float = 3, limit: int = 100,
                          max_pages: int = 50, verbose: bool = True):
-        '''分页拉 Zotero 本地 API 生成 papers.json；Zotero 不可用时保留现有快照并返回 None。
+        '''分页拉 Zotero 本地 API 生成 papers.json；Zotero 不可用或返回空结果时
+        保留现有快照并返回 None，绝不覆盖成空表。
 
         拉取与条目解析交给 CitationHandler.zotero，统计由 build_papers(verbose=...) 就地打印；
         本方法只做快照落盘、缓存刷新和 missingKeys 统计（依赖 citations.json）。
@@ -304,13 +284,15 @@ class CitationHandler:
         zotero = CitationHandler.zotero
         try:
             items = zotero.fetch_items(timeout=timeout, limit=limit, max_pages=max_pages)
+            if not items:
+                raise RuntimeError('Zotero 返回 0 条 item（未登录 / API 地址有误 / 库为空）')
             built = zotero.build_papers(items, verbose=verbose)
         except RuntimeError as e:
             if verbose:
                 print(f'[citations] Zotero 不可用，保留现有快照：{e}')
             return None
 
-        CitationHandler.init()
+        CitationHandler.init_cites()
         missing_keys = len(set(CitationHandler.citation_data.values()) - set(built))
         payload = {k: built[k] for k in sorted(built)}
         out = Path(out_path or PAPERS_PATH)

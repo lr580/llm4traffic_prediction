@@ -269,5 +269,8 @@
   "VisionST": "T-465",
   "HieraMix": "T-456",
   "PatchID": "T-466",
-  "SqLinear": "T-467"
+  "SqLinear": "T-467",
+  "UltraSTF": "T-464",
+  "LoReST": "T-462",
+  "BiST": "T-461"
 }
