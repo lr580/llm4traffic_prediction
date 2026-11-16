@@ -313,11 +313,11 @@ class Results:
         return self.multi_index_view(group_by='dataset', groups=datasets)
 
     def to_latex_table(self, datasets: list = None, sort_by=None,
-                       bold_min: bool = True, nan: str = '-', **kwargs) -> str:
+                       latex_bold_best: bool = True, nan: str = '-', **kwargs) -> str:
         """把结果整理成 LaTeX 表格行（不含表头/表尾），index 列即模型名。
 
         datasets/sort_by 控制取哪个数据集视图与排序（sort_by 用视图列名，如 ('SD', 'MAE')）；
-        bold_min 加粗每列最小值；kwargs 透传给 pdDataFrame2str（如 suffix、cell_decorator）。
+        latex_bold_best 加粗每列最小值；kwargs 透传给 pdDataFrame2str（如 suffix、cell_decorator）。
         用法见 main.py。
         """
         df = self.dataset_view(datasets) if datasets else self.dataset_view()
@@ -325,7 +325,7 @@ class Results:
             df = df.sort_values(by=sort_by, ascending=False)
         kwargs.setdefault('prefix', '')
         tex = pdDataFrame2str(df, **kwargs)
-        if bold_min:
+        if latex_bold_best:
             tex = bold_column_min_in_latex_table(tex)
         return tex.replace('nan', nan) if nan else tex
     

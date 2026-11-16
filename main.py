@@ -24,7 +24,7 @@ CASES = {
         filter=dict(tags='2019', horizons=[-1], inLen=12, outLen=12),
         datasets=['SD', 'GBA', 'GLA', 'CA'],
         sort_by=('SD', 'MAE'),
-        bold_min=True,
+        latex_bold_best=True,
         name_style='paper',
         format='excel',
     ),
@@ -32,8 +32,9 @@ CASES = {
         filter=dict(datasets=[f'PEMS0{x}' for x in '3478'], horizons=[-1], tags='survey'),
         datasets=[f'PEMS0{x}' for x in '3478'],
         sort_by=('PEMS03', 'MAE'),
-        bold_min=False,
-        name_style='cite',
+        latex_bold_best=False,
+        name_style='paper',
+        format='excel',
         externalCite={'ARIMA': 'O-64', 'VAR': 'O-65', 'SVR': 'O-66'},
         printSOTA=True,
     ),
@@ -44,7 +45,7 @@ CASES = {
         merge_csv=BASELINES_DIR / 'v3.csv',
         datasets=['SD', 'GBA', 'GLA', 'CA'],
         sort_by=('SD', 'MAE'),
-        bold_min=True,
+        latex_bold_best=True,
         name_style='plain',
     ),
 }
@@ -80,7 +81,7 @@ def run_baseline_view(case: str, fmt: str = None, output: str = '-',
     if fmt == 'latex':
         df = None
         text = results.to_latex_table(datasets=cfg['datasets'], sort_by=cfg['sort_by'],
-                                      bold_min=cfg.get('bold_min', True))
+                                      latex_bold_best=cfg.get('latex_bold_best', True))
     else:
         df = results.dataset_view(cfg['datasets']).sort_values(by=cfg['sort_by'], ascending=False)
         text = str(df)

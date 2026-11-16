@@ -1,11 +1,15 @@
 # Excel 输出相关通用函数（样式化 DataFrame 导出）
 from math import isnan
 from pathlib import Path
+import re
 
 from openpyxl import Workbook
+from openpyxl.comments import Comment
 from openpyxl.styles import Alignment, Border, Font, Side
 from openpyxl.utils import get_column_letter
 from pandas import DataFrame, isna
+
+CITE_RE = re.compile(r'\\cite\{([^}]*)\}')
 
 THIN = Side(style='thin')
 BORDER = Border(left=THIN, right=THIN, top=THIN, bottom=THIN)
@@ -35,6 +39,20 @@ def _to_num(v):
     return None if isnan(f) else f
 
 
+def _clean_cite(cell, text: str) -> str:
+    '''摘除文本中的 \\cite{T-xxx} 标记并写入单元格批注，返回清理后的正文。
+
+    - 例：'STGCN \\cite{T-28}' -> 正文 'STGCN'，批注 'T-28'；
+      无引用标记时正文原样返回、不加批注。
+    - 一个单元格含多个标记时全部摘除、批注按出现顺序合并。
+    '''
+    keys = CITE_RE.findall(text)
+    if not keys:
+        return text
+    cell.comment = Comment('\n'.join(keys), 'citation')
+    return CITE_RE.sub('', text).strip()
+
+
 def pdDataFrame2excel(df: DataFrame, path, index_header='model', best='min', second=True,
                       number_format='0.000', width_pad=2, sheet_name='baselines',
                       bold_index: set = None) -> Path:
@@ -49,6 +67,7 @@ def pdDataFrame2excel(df: DataFrame, path, index_header='model', best='min', sec
       表头加粗居中 + 细边框。
     - 列宽自适应：按表头与单元格显示宽度（ASCII 记 1、中文记 2）取最大值加 padding。
     - 冻结前两行与首列，便于下拉浏览时表头与模型名可见。
+    - 引用批注：正文中的 \\cite{T-xxx} 摘除后写为该单元格的 Excel 批注（内容为 T-xxx）。
     数值单元格写 float 并套用 number_format（如 '0.000' 对应 3 位小数），缺失写空单元格。
     '''
     if df.columns.nlevels > 2:
@@ -90,14 +109,16 @@ def pdDataFrame2excel(df: DataFrame, path, index_header='model', best='min', sec
     # ---- 数据 ----
     for offset, (idx, row) in enumerate(df.iterrows()):
         r = first_data_row + offset
-        name_cell = ws.cell(row=r, column=1, value=str(idx))
+        name = _clean_cite(ws.cell(row=r, column=1), str(idx))
+        name_cell = ws.cell(row=r, column=1, value=name)
         if bold_index and idx in bold_index:
             name_cell.font = Font(bold=True)
-        widths[1] = max(widths[1], _disp_width(idx))
+        widths[1] = max(widths[1], _disp_width(name))
         for c, col in enumerate(cols, start=2):
             v = _to_num(row[col])
             if v is None:
-                ws.cell(row=r, column=c, value='' if isna(row[col]) else str(row[col]))
+                cell = ws.cell(row=r, column=c)
+                cell.value = _clean_cite(cell, '' if isna(row[col]) else str(row[col]))
             else:
                 cell = ws.cell(row=r, column=c, value=v)
                 cell.number_format = number_format

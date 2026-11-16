@@ -14,9 +14,9 @@
 
 - `python main.py` 默认按 LargeST 场景导出 `LargeST_view.xlsx`（场景 dict 里配了 `format='excel'`）
 - `--case {LargeST,PEMS0x,v3}` 切换场景
-- `--format {df,latex,excel}` 输出形式，不传时按场景配置（`LargeST` 默认 `excel`，其余 `df`）
+- `--format {df,latex,excel}` 输出形式，不传时按场景配置（`LargeST` / `PEMS0x` 默认 `excel`，`v3` 默认 `df`）
 - `--format latex` 输出 LaTeX 表格行，`--output table.tex` 写文本文件
-- `--format excel` 导出样式化 Excel（双表头合并单元格、列宽自适应、每列最优加粗 / 次优下划线斜体、数据集分组竖线 + 外圈边框），默认写 `{场景}_view.xlsx`，可用 `--output` 指定路径
+- `--format excel` 导出样式化 Excel（双表头合并单元格、列宽自适应、每列最优加粗 / 次优下划线斜体、数据集分组竖线 + 外圈边框），默认写 `{场景}_view.xlsx`，可用 `--output` 指定路径；单元格正文中的 `\cite{T-xxx}` 引用标记自动摘除并转写为该单元格的 Excel 批注（内容为 `T-xxx`）
 - `df` 格式下 `--output` 写纯文本文件
 - `excel` 输出中，CCF-A 论文对应模型的第一列模型名加粗，其余（含无元数据）保持常规字体；`latex` / `df` 输出不对模型名做任何斜体或加粗装饰
 - `--name-style {plain,cite,paper}` 模型名渲染：`plain` 原样 / `cite` 注入引用键 / `paper` 显示为 `Model (VENUE YEAR)` 再注入引用键，venue/year 有其一即标注、全缺时降级（默认按场景配置）
@@ -50,7 +50,7 @@
 
   - `log.py` 输出、日志、格式转换
   - `tex.py` 处理 LaTeX 格式转换的辅助函数
-  - `excel.py` DataFrame 导出样式化 Excel（合并表头、列宽自适应、最优/次优标注）
+  - `excel.py` DataFrame 导出样式化 Excel（合并表头、列宽自适应、最优/次优标注、`\cite{}` 转单元格批注）
 - `baselines/` 基准模型：历史平均基线实现、各论文公开结果的汇总对比，以及 LaTeX 引用与论文元数据管理
 
   - `abandoned/HA.py`，历史平均值，不同节点、不同时间片、星期的三维度的平均值用作预测
@@ -58,7 +58,8 @@
   - `citations.py` 维护 LaTeX 引用，给结果注入引用；`paper()` 一次查表构建 `Paper`，`render` 配合 `Paper.display` 按显示名渲染
   - `citations.json` 可自行更换的模型->引用映射表
   - `papers.json` 论文元数据快照（引用键 -> venue/year/CCF，空值字段省略），由 `CitationHandler.sync_from_zotero()` 从本地 Zotero API 分页拉取生成；运行时只读快照，Zotero 不可用或返回空结果时不会覆盖
-  - `ccfCatalog.py` CCF-A 目录常量与 venue 三步匹配（反例 / 词命中 / 相似度），可 `python -m utils.baselines.ccfCatalog` 统计 Zotero 命中情况
+  - `ccfA.json` / `ccfB.json` CCF 第七版（项目口径）A / B 类目录数据（缩写 -> 全称）
+  - `ccfCatalog.py` CCF-A/B 目录常量与 venue 三步匹配（反例 / 词命中 / 相似度），等级判定 A/B 两表合成（缩写冲突 A 优先）；可 `python -m utils.baselines.ccfCatalog` 统计 Zotero 命中情况
   - `baselineResults.csv` 部分经典基准模型结果
   - `rawResultParser.py` 辅助中间函数，解析论文原始表格结果数据
   - `rawResults.py` 一些论文文本原始结果
