@@ -12,11 +12,14 @@
 
 项目入口 `main.py`（从仓库根目录运行）：
 
-- `python main.py` 默认打印 LargeST 基准模型结果的 DataFrame 视图
+- `python main.py` 默认按 LargeST 场景导出 `LargeST_view.xlsx`（场景 dict 里配了 `format='excel'`）
 - `--case {LargeST,PEMS0x,v3}` 切换场景
-- `--format latex` 改为输出 LaTeX 表格行，`--output table.tex` 写文本文件
-- 默认 df 格式下 `--output table.xlsx` 写出完整 Excel 表格（终端预览会截断，文件不会）
-- `--name-style {plain,cite,paper}` 模型名渲染：`plain` 原样 / `cite` 注入引用键 / `paper` 显示为 `Model (VENUE YEAR)` 再注入引用键，venue/year 缺失时自动降级（默认按场景配置）
+- `--format {df,latex,excel}` 输出形式，不传时按场景配置（`LargeST` 默认 `excel`，其余 `df`）
+- `--format latex` 输出 LaTeX 表格行，`--output table.tex` 写文本文件
+- `--format excel` 导出样式化 Excel（双表头合并单元格、列宽自适应、每列最优加粗 / 次优下划线斜体、数据集分组竖线 + 外圈边框），默认写 `{场景}_view.xlsx`，可用 `--output` 指定路径
+- `df` 格式下 `--output` 写纯文本文件
+- `latex` / `excel` 表格输出中，非 CCF-A（含无引用键）模型的第一列模型名以斜体标注
+- `--name-style {plain,cite,paper}` 模型名渲染：`plain` 原样 / `cite` 注入引用键 / `paper` 显示为 `Model (VENUE YEAR)` 再注入引用键，venue/year 有其一即标注、全缺时降级（默认按场景配置）
 - `--ccf-a` 只保留发表于 CCF-A 的论文对应的模型
 - `--year START END` 只保留论文发表年份在区间内的模型，如 `--year 2025 2026`
 - `--ccf-a` / `--year` 均基于 `papers.json` 元数据快照筛选，可与任意场景、输出格式组合
@@ -47,9 +50,10 @@
 
   - `log.py` 输出、日志、格式转换
   - `tex.py` 处理 LaTeX 格式转换的辅助函数
-- `baselines/` 基准模型
+  - `excel.py` DataFrame 导出样式化 Excel（合并表头、列宽自适应、最优/次优标注）
+- `baselines/` 基准模型：历史平均基线实现、各论文公开结果的汇总对比，以及 LaTeX 引用与论文元数据管理
 
-  - `HA.py`，历史平均值，不同节点、不同时间片、星期的三维度的平均值用作预测
+  - `abandoned/HA.py`，历史平均值，不同节点、不同时间片、星期的三维度的平均值用作预测
   - `results.py` 对基准模型结果进行多角度展示对比等；`Paper` dataclass 聚合模型名 / 引用键 / venue / 年份 / CCF 等级，`flit` 支持按论文元数据筛选
   - `citations.py` 维护 LaTeX 引用，给结果注入引用；`paper()` 一次查表构建 `Paper`，`render` 配合 `Paper.display` 按显示名渲染
   - `citations.json` 可自行更换的模型->引用映射表

@@ -7,5 +7,6 @@ img/
 !requirements.txt
 docs/report.md
 .codebuddy
+.vscode/
 .claude/
 AGENTS.md

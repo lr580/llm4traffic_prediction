@@ -272,5 +272,9 @@
   "SqLinear": "T-467",
   "UltraSTF": "T-464",
   "LoReST": "T-462",
-  "BiST": "T-461"
+  "BiST": "T-461",
+  "HyperD": "T-429",
+  "MetaDG": "T-488",
+  "AutoSTF": "T-483",
+  "iTPGT-former": "T-409"
 }

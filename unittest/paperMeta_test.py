@@ -74,8 +74,11 @@ check(CitationHandler.paper('HA').unknown()
       and CitationHandler.paper('不存在的模型').year is None,
       '无元数据 / 缺键时字段留空且 unknown() 成立')
 check(CitationHandler.paper('X', {'X': ''}).display() == 'X'
-      and Paper('X', cite='', venue='KDD').display() == 'X',
-      'venue/year 缺失时显示名原样返回')
+      and Paper('HA').display() == 'HA',
+      'venue/year 全缺时显示名原样返回')
+check(Paper('X', cite='', venue='KDD').display() == 'X (KDD)'
+      and Paper('X', cite='', year=2026).display() == 'X (2026)',
+      'venue / year 有其一即标注（如 year-only 的非 A 论文）')
 check(CitationHandler.paper('ARIMA', {'ARIMA': 'O-64'}).year is not None,
       'externalCite 临时补键可查到元数据')
 check(CitationHandler.paper('STGCN').display(withCite=False) == 'STGCN (IJCAI 2018)'

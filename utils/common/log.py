@@ -51,16 +51,16 @@ def round_decorator(s:str):
     except:
         return s
     
-def pdRow2str(row: Series, prefix: str = "& ", separator: str = " & ", suffix: str = r" \\ \hline", include_index: bool = False, cell_decorator: Callable[[str], str] = non_decorator) -> str:
-    """格式化pandas Series (row)为自定义字符串"""
+def pdRow2str(row: Series, prefix: str = "& ", separator: str = " & ", suffix: str = r" \\ \hline", include_index: bool = False, cell_decorator: Callable[[str], str] = non_decorator, index_decorator: Callable[[str], str] = non_decorator) -> str:
+    """格式化pandas Series (row)为自定义字符串；index_decorator 单独装饰索引列（如给非 CCF-A 模型名加斜体）"""
     values = row.astype(str).tolist()
     values = list(map(cell_decorator, values))
     if include_index:
-        values.insert(0, cell_decorator(str(row.name)))
+        values.insert(0, index_decorator(str(row.name)))
     joined_values = separator.join(values)
     return f"{prefix}{joined_values}{suffix}"
 
-def pdDataFrame2str(df: DataFrame, prefix: str = "& ", separator: str = " & ", suffix: str = r" \\ \hline", line_separator: str = "\n", include_index: bool = True, include_header: bool = False, header_prefix: Optional[str] = None, header_separator: Optional[str] = None, header_suffix: Optional[str] = None, index_header: str = "Index", cell_decorator: Callable[[str], str] = round_decorator) -> str:
+def pdDataFrame2str(df: DataFrame, prefix: str = "& ", separator: str = " & ", suffix: str = r" \\ \hline", line_separator: str = "\n", include_index: bool = True, include_header: bool = False, header_prefix: Optional[str] = None, header_separator: Optional[str] = None, header_suffix: Optional[str] = None, index_header: str = "Index", cell_decorator: Callable[[str], str] = round_decorator, index_decorator: Callable[[str], str] = non_decorator) -> str:
     """格式化整个DataFrame的每一行数据 返回包含所有格式化行的字符串"""
     formatted_rows = []
     if include_header:
@@ -71,7 +71,7 @@ def pdDataFrame2str(df: DataFrame, prefix: str = "& ", separator: str = " & ", s
         formatted_rows.append(f"{header_prefix}{header_str}{header_suffix}")
     for i in range(len(df)):
         row = df.iloc[i]
-        formatted_rows.append(pdRow2str(row, prefix, separator, suffix, include_index, cell_decorator))
+        formatted_rows.append(pdRow2str(row, prefix, separator, suffix, include_index, cell_decorator, index_decorator))
     return line_separator.join(formatted_rows)
 
 if __name__ == '__main__':

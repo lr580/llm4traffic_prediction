@@ -35,12 +35,14 @@ class Paper:
         return not (self.venue or self.year or self.ccf)
 
     def display(self, withCite: bool = True) -> str:
-        '''显示名：Model (VENUE YEAR) \\cite{T-xxx}；标注与引用各自缺失时跳过。
+        '''显示名：Model (VENUE YEAR) \\cite{T-xxx}；venue / year 有其一即标注，全缺才原样。
 
         例：Paper('STGCN', 'T-28', 'IJCAI', 2018, 'A').display() -> 'STGCN (IJCAI 2018) \\cite{T-28}'
-            Paper('HA').display()                            -> 'HA'
+            Paper('SqLinear', 'T-467', year=2026).display()     -> 'SqLinear (2026)'
+            Paper('HA').display()                               -> 'HA'
         '''
-        name = f'{self.model} ({self.venue} {self.year})' if self.venue and self.year else self.model
+        meta = ' '.join(x for x in (self.venue, str(self.year) if self.year else '') if x)
+        name = f'{self.model} ({meta})' if meta else self.model
         return f'{name} \\cite{{{self.cite}}}' if withCite and self.cite else name
 
     def display_cite(self) -> str:
