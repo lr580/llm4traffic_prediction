@@ -52,7 +52,7 @@ def round_decorator(s:str):
         return s
     
 def pdRow2str(row: Series, prefix: str = "& ", separator: str = " & ", suffix: str = r" \\ \hline", include_index: bool = False, cell_decorator: Callable[[str], str] = non_decorator, index_decorator: Callable[[str], str] = non_decorator) -> str:
-    """格式化pandas Series (row)为自定义字符串；index_decorator 单独装饰索引列（如给非 CCF-A 模型名加斜体）"""
+    """格式化pandas Series (row)为自定义字符串；index_decorator 单独装饰索引列（如给模型名加标记）"""
     values = row.astype(str).tolist()
     values = list(map(cell_decorator, values))
     if include_index:

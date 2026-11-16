@@ -6,7 +6,7 @@ BASELINE_RESULTS = Results.from_csv('utils/baselines/baselineResults.csv')
 BASELINE_RESULTS.flit(['PEMS04'], horizons=[3,6,12])
 # CitationHandler.parse_rawinfo(r'D:\_lr580_desktop\trafficFlowPredictionSurvey\具体论文笔记.md', r'utils\baselines\citations.json') # INIT
 CitationHandler.render(BASELINE_RESULTS, defaultCite='T-138')
-df = BASELINE_RESULTS.horizon_view().sort_values(by=(3, 'mae'), ascending=False)
+df = BASELINE_RESULTS.horizon_view().sort_values(by=(3, 'MAE'), ascending=False)
 print(df)
 print(pdDataFrame2str(df, suffix=r' \\ \cline{2-11}')) #, cell_decorator=latex_add_decorator))
 print(df.shape) 

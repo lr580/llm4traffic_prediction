@@ -23,7 +23,7 @@ CASES = {
     'LargeST': dict(
         filter=dict(tags='2019', horizons=[-1], inLen=12, outLen=12),
         datasets=['SD', 'GBA', 'GLA', 'CA'],
-        sort_by=('SD', 'mae'),
+        sort_by=('SD', 'MAE'),
         bold_min=True,
         name_style='paper',
         format='excel',
@@ -31,7 +31,7 @@ CASES = {
     'PEMS0x': dict(
         filter=dict(datasets=[f'PEMS0{x}' for x in '3478'], horizons=[-1], tags='survey'),
         datasets=[f'PEMS0{x}' for x in '3478'],
-        sort_by=('PEMS03', 'mae'),
+        sort_by=('PEMS03', 'MAE'),
         bold_min=False,
         name_style='cite',
         externalCite={'ARIMA': 'O-64', 'VAR': 'O-65', 'SVR': 'O-66'},
@@ -43,7 +43,7 @@ CASES = {
                             'STGODE', 'RAST', 'BigST', 'STTN', 'STWave', 'AGCRN', 'DGCRN']),
         merge_csv=BASELINES_DIR / 'v3.csv',
         datasets=['SD', 'GBA', 'GLA', 'CA'],
-        sort_by=('SD', 'mae'),
+        sort_by=('SD', 'MAE'),
         bold_min=True,
         name_style='plain',
     ),
@@ -77,20 +77,18 @@ def run_baseline_view(case: str, fmt: str = None, output: str = '-',
         CitationHandler.render(results, formatter=Paper.display, externalCite=extCite)
     if cfg.get('printSOTA'):
         results.printSOTA()
-    # 渲染后 model 即显示名；非 CCF-A（含无元数据）的显示名集合，供表格首列斜体标注
-    non_a = {r.model for r, p in zip(results, papers) if p.ccf != 'A'}
-
     if fmt == 'latex':
         df = None
         text = results.to_latex_table(datasets=cfg['datasets'], sort_by=cfg['sort_by'],
-                                      bold_min=cfg.get('bold_min', True),
-                                      index_decorator=lambda m: f'\\textit{{{m}}}' if m in non_a else m)
+                                      bold_min=cfg.get('bold_min', True))
     else:
         df = results.dataset_view(cfg['datasets']).sort_values(by=cfg['sort_by'], ascending=False)
         text = str(df)
     if fmt == 'excel':
+        # 渲染后 model 即显示名；CCF-A 的显示名集合，供表格首列加粗标注（无元数据者自然保持常规字体）
+        ccf_a = {r.model for r, p in zip(results, papers) if p.ccf == 'A'}
         dest = Path(f'{case}_view.xlsx' if output == '-' else output).with_suffix('.xlsx')
-        pdDataFrame2excel(df, dest, italic_index=non_a)
+        pdDataFrame2excel(df, dest, bold_index=ccf_a)
         print(f'已写入 {dest}')
         return text
     if output == '-':

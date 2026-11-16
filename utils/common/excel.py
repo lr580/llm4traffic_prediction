@@ -37,14 +37,14 @@ def _to_num(v):
 
 def pdDataFrame2excel(df: DataFrame, path, index_header='model', best='min', second=True,
                       number_format='0.000', width_pad=2, sheet_name='baselines',
-                      italic_index: set = None) -> Path:
+                      bold_index: set = None) -> Path:
     '''DataFrame 导出为样式化 Excel 表格，返回写入路径。
 
     - 双表头：MultiIndex 列渲染为两行——首行数据集名横向合并、次行 metric 名，
       左上角 index_header 纵向合并两行；单层列自动退化为单行表头。
     - 最优/次优：best='min'/'max'/None 指定方向，second 控制是否标注次优，
       并列时同值同待遇（最优加粗、次优下划线+斜体），非数值（如 '-'）跳过。
-    - italic_index：索引值集合，命中的模型名（第一列）用斜体（如非 CCF-A 模型）。
+    - bold_index：索引值集合，命中的模型名（第一列）加粗（如 CCF-A 模型），其余保持常规字体。
     - 边框：模型列与各数据集分组之间加竖向分隔线（thin），整个表格外圈加边框（thin）；
       表头加粗居中 + 细边框。
     - 列宽自适应：按表头与单元格显示宽度（ASCII 记 1、中文记 2）取最大值加 padding。
@@ -91,8 +91,8 @@ def pdDataFrame2excel(df: DataFrame, path, index_header='model', best='min', sec
     for offset, (idx, row) in enumerate(df.iterrows()):
         r = first_data_row + offset
         name_cell = ws.cell(row=r, column=1, value=str(idx))
-        if italic_index and idx in italic_index:
-            name_cell.font = Font(italic=True)
+        if bold_index and idx in bold_index:
+            name_cell.font = Font(bold=True)
         widths[1] = max(widths[1], _disp_width(idx))
         for c, col in enumerate(cols, start=2):
             v = _to_num(row[col])

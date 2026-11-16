@@ -128,6 +128,9 @@ class Result:
             return isinstance(paper.year, int) and year_range[0] <= paper.year <= year_range[1]
         return True
     
+METRICS = ('mae', 'mape', 'rmse')
+'''指标字段名：与 EvaluateResult 字段名、CSV 列名一致，属数据层；视图层表头统一大写（MAE/MAPE/RMSE）'''
+
 @dataclass
 class Results:
     results: List[Result] = field(default_factory=list)
@@ -161,18 +164,14 @@ class Results:
             data.append(row_data)
         return pd.DataFrame(data, columns=Results.ORDERS, **kwargs)
     
-    ORDERS = ['model', 'dataset', 'mae', 'mape', 'rmse', 'split', 'inLen', 'outLen', 'tags', 'horizon', 'source']
+    ORDERS = ['model', 'dataset', *METRICS, 'split', 'inLen', 'outLen', 'tags', 'horizon', 'source']
     
     @staticmethod
     def from_dataframe(df: pd.DataFrame) -> List[Result]:
         # 可以设计为动态的，让 Result 的字段可以动态变化而不必修改该函数，略。
         results = []
         for _, row in df.iterrows():
-            eval_data = {
-                'mae': float(row['mae']),
-                'mape': float(row['mape']),
-                'rmse': float(row['rmse'])
-            }
+            eval_data = {metric: float(row[metric]) for metric in METRICS}
             evaluate_result = EvaluateResult(**eval_data)
             baseline_data = {
                 'model': row['model'],
@@ -209,14 +208,11 @@ class Results:
     def printSOTA(self):
         df = self.to_dataframe() # 数据不多，耗不了几个复杂度；懒得缓存 df 避免一致性问题
         grouped = df.groupby('dataset')
-        for dataset, group in grouped: # 懒得泛化到任意指标了，需要再改吧
+        for dataset, group in grouped:
             print(f"数据集: {dataset}")
-            mae_best = group.loc[group['mae'].idxmin()]
-            mape_best = group.loc[group['mape'].idxmin()]
-            rmse_best = group.loc[group['rmse'].idxmin()]
-            print(f"  MAE 最优: {mae_best['model']} (值为 {mae_best['mae']:.4f})")
-            print(f"  MAPE最优: {mape_best['model']} (值为 {mape_best['mape']:.4f})")
-            print(f"  RMSE最优: {rmse_best['model']} (值为 {rmse_best['rmse']:.4f})")
+            for metric in METRICS:
+                best = group.loc[group[metric].idxmin()]
+                print(f"  {metric.upper()} 最优: {best['model']} (值为 {best[metric]:.4f})")
             print()
             
     @staticmethod
@@ -273,18 +269,18 @@ class Results:
         return ranked_df
     
     def multi_index_view(self, group_by: str, groups: list = None, metrics: list = None) -> pd.DataFrame:
-        """ 通用的多级索引视图函数
+        """ 通用的多级索引视图函数；表头末级是指标的显示名（MAE/MAPE/RMSE）
         
         Args:
             group_by: 分组字段，如 'dataset', 'horizon'
             groups: 指定的分组值列表，如果为None则使用所有存在的值
-            metrics: 指定的指标列表，如果为None则使用 ['mae', 'mape', 'rmse']
+            metrics: 指标字段名（METRICS 的小写子集），为None则使用全部三个指标
             
         Returns:
             pd.DataFrame: 多级列索引的DataFrame"""
         df = self.to_dataframe()
         if metrics is None:
-            metrics = ['mae', 'mape', 'rmse']
+            metrics = list(METRICS)
         if groups is not None:
             df = df[df[group_by].isin(groups)]
         melted = df.melt(
@@ -300,6 +296,7 @@ class Results:
             aggfunc='mean'
         )
         result.columns.names = [group_by, 'metric']
+        result = result.rename(columns=str.upper, level='metric')  # 数据层小写，视图层显示为 MAE/MAPE/RMSE
         if groups is not None:
             available_groups = [g for g in groups if g in result.columns.get_level_values(0)]
             result = result.reindex(columns=available_groups, level=0)
@@ -307,20 +304,21 @@ class Results:
 
     def horizon_view(self, horizons: list = [3, 6, 12]) -> pd.DataFrame:
         """根据给定的horizons参数生成多级表头的DataFrame。
-        索引是model，第一级列是不同horizons，第二级列为各个horizon的mae、mape、rmse指标。"""
+        索引是model，第一级列是不同horizons，第二级列为各个horizon的MAE、MAPE、RMSE指标。"""
         return self.multi_index_view(group_by='horizon', groups=horizons)
 
     def dataset_view(self, datasets: list = [f'PEMS0{x}' for x in '3478']) -> pd.DataFrame:
         """根据给定的datasets参数生成多级表头的DataFrame。
-        索引是model，第一级列是不同数据集，第二级列为各个数据集的mae、mape、rmse指标。"""
+        索引是model，第一级列是不同数据集，第二级列为各个数据集的MAE、MAPE、RMSE指标。"""
         return self.multi_index_view(group_by='dataset', groups=datasets)
 
     def to_latex_table(self, datasets: list = None, sort_by=None,
                        bold_min: bool = True, nan: str = '-', **kwargs) -> str:
         """把结果整理成 LaTeX 表格行（不含表头/表尾），index 列即模型名。
 
-        datasets/sort_by 控制取哪个数据集视图与排序；bold_min 加粗每列最小值；
-        kwargs 透传给 pdDataFrame2str（如 suffix、cell_decorator）。用法见 main.py。
+        datasets/sort_by 控制取哪个数据集视图与排序（sort_by 用视图列名，如 ('SD', 'MAE')）；
+        bold_min 加粗每列最小值；kwargs 透传给 pdDataFrame2str（如 suffix、cell_decorator）。
+        用法见 main.py。
         """
         df = self.dataset_view(datasets) if datasets else self.dataset_view()
         if sort_by is not None:
